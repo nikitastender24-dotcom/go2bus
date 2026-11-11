@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Павлодар · Автобусы</title>
-    <!-- Подключаем Leaflet -->
+    
+    <!-- Иконка сайта -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚌</text></svg>">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <!-- Шрифт Roboto (классика 2014) -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
@@ -19,7 +21,7 @@
             overflow: hidden;
         }
 
-        /* ─── Карта на весь экран (100%) ─── */
+        /* ─── Карта на весь экран ─── */
         #map {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -27,97 +29,109 @@
             z-index: 1;
         }
 
-        /* ─── Парящая панель (Flat Paper Design) ─── */
+        /* ─── Парящая панель (Material Design) ─── */
         .sidebar {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 320px;
+            top: 20px; left: 20px;
+            width: 340px;
             max-height: calc(100vh - 40px);
             background: #ffffff;
-            border-radius: 3px;
-            /* Легкая тень в стиле 2014 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1000;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Шапка панели (Выбор автобуса) */
-        .sidebar-header {
+        /* Шапка бренда */
+        .brand {
+            background: #1976d2;
+            color: #fff;
             padding: 16px;
-            border-bottom: 1px solid #eeeeee;
-            background: #ffffff;
             display: flex;
             align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
+        .brand span { font-size: 24px; }
 
-        .sidebar-header select {
+        /* Кастомная кнопка выбора */
+        .route-btn-wrapper { padding: 16px; background: #fff; border-bottom: 1px solid #eee; }
+        
+        .route-btn {
             width: 100%;
-            appearance: none;
-            -webkit-appearance: none;
-            background: #f5f5f5 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23757575' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;
-            background-size: 12px;
+            background: #f5f5f5;
             border: 1px solid #e0e0e0;
             border-radius: 2px;
-            padding: 10px 36px 10px 12px;
+            padding: 12px 16px;
             font-size: 16px;
             font-weight: 500;
             color: #212121;
-            outline: none;
+            text-align: left;
             cursor: pointer;
-            font-family: inherit;
-        }
-
-        /* Инфо о маршруте */
-        .route-info {
-            padding: 16px;
-            border-bottom: 1px solid #eeeeee;
-            background: #fafafa;
-            display: none;
-        }
-
-        .route-info.active {
-            display: block;
-        }
-
-        .route-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #212121;
-            margin-bottom: 4px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
         }
+        .route-btn:hover { background: #eeeeee; }
+        .route-btn svg { fill: #757575; width: 16px; height: 16px; transition: transform 0.3s; }
+        .route-btn.open svg { transform: rotate(180deg); }
 
+        /* ─── Инфо о маршруте ─── */
+        .route-info {
+            background: #fff;
+            display: none;
+            flex-direction: column;
+        }
+        .route-info.active { display: flex; }
+        
+        .route-info-header {
+            padding: 16px;
+            background: #fafafa;
+            border-bottom: 1px solid #eee;
+        }
+        .route-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .route-num {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1976d2;
+            line-height: 1;
+        }
+        .toggle-btn {
+            background: none; border: 1px solid #bdbdbd; border-radius: 2px;
+            padding: 4px 8px; font-size: 11px; font-weight: 700; color: #616161;
+            text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+        }
+        .toggle-btn:hover { background: #eeeeee; color: #212121; border-color: #9e9e9e; }
+        
         .route-dir {
             font-size: 13px;
             color: #757575;
             line-height: 1.4;
         }
 
-        .toggle-btn {
-            background: none;
-            border: none;
-            color: #1976d2;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            padding: 0;
-            text-transform: uppercase;
-            font-family: inherit;
-        }
-
         /* ─── Список остановок ─── */
         .stops-list {
             list-style: none;
             overflow-y: auto;
-            max-height: 50vh;
-            background: #ffffff;
+            max-height: calc(100vh - 280px);
             padding: 8px 0;
         }
+        
+        /* Кастомный скроллбар */
+        .stops-list::-webkit-scrollbar { width: 6px; }
+        .stops-list::-webkit-scrollbar-track { background: #f1f1f1; }
+        .stops-list::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+        .stops-list::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
 
         .stops-list li {
             padding: 12px 16px;
@@ -129,112 +143,171 @@
             cursor: pointer;
             transition: background 0.1s;
         }
+        .stops-list li:hover { background: #e3f2fd; }
+        .stops-list li:last-child { border-bottom: none; }
 
-        .stops-list li:hover {
-            background: #f5f5f5;
-        }
-
-        .stops-list li:last-child {
-            border-bottom: none;
-        }
-
-        /* Точка на маршруте (Flat Design) */
         .stop-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px; height: 8px;
             border-radius: 50%;
-            background: #ffffff;
-            border: 2px solid #757575;
+            background: #bdbdbd;
             flex-shrink: 0;
         }
-
         .stops-list li.terminal .stop-dot {
             background: #1976d2;
-            border-color: #1976d2;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3);
         }
-
         .stops-list li.terminal {
             font-weight: 500;
             color: #1976d2;
         }
 
-        .stop-name {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        /* ─── Модальное окно выбора маршрута ─── */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        /* Статус */
-        .status {
+        .modal-box {
+            background: #fff;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+
+        .modal-head {
             padding: 16px;
-            text-align: center;
-            color: #757575;
-            font-size: 13px;
-            display: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
         }
-        .status.active {
-            display: block;
+        .modal-head h3 { font-size: 18px; font-weight: 500; color: #212121; margin: 0; }
+        .close-btn { background: none; border: none; font-size: 24px; color: #757575; cursor: pointer; }
+        .close-btn:hover { color: #212121; }
+
+        .modal-search {
+            margin: 16px;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            font-size: 15px;
+            outline: none;
+            font-family: inherit;
+        }
+        .modal-search:focus { border-color: #1976d2; }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+            padding: 0 16px 16px;
+            max-height: 50vh;
+            overflow-y: auto;
         }
 
-        /* ─── Стилизация Leaflet под Flat ─── */
+        .grid-btn {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            padding: 14px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #424242;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .grid-btn:hover {
+            background: #e3f2fd;
+            border-color: #1976d2;
+            color: #1976d2;
+        }
+        .grid-btn.active {
+            background: #1976d2;
+            color: #fff;
+            border-color: #1976d2;
+        }
+
+        /* ─── Стилизация Leaflet под Flat UI ─── */
         .leaflet-control-zoom a {
             background: #ffffff;
             color: #212121;
             border: none;
             border-radius: 2px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important;
         }
-        .leaflet-control-zoom a:hover {
-            background: #f5f5f5;
-        }
-        .leaflet-control-attribution {
-            background: rgba(255,255,255,0.8);
-            font-size: 10px;
-            box-shadow: none;
-        }
+        .leaflet-control-zoom a:hover { background: #f5f5f5; }
+        .leaflet-control-attribution { background: rgba(255,255,255,0.8); border-radius: 2px; }
 
         /* ─── Мобильная версия ─── */
         @media (max-width: 600px) {
             .sidebar {
-                top: auto;
-                bottom: 0;
-                left: 0;
+                top: auto; bottom: 0; left: 0;
                 width: 100%;
-                max-height: 45vh;
-                border-radius: 12px 12px 0 0;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                max-height: 50vh;
+                border-radius: 8px 8px 0 0;
             }
-            .stops-list {
-                max-height: calc(45vh - 130px);
-            }
+            .stops-list { max-height: calc(50vh - 180px); }
+            .modal-grid { max-height: 40vh; }
         }
     </style>
 </head>
 <body>
 
-<!-- Карта на заднем фоне -->
 <div id="map"></div>
 
-<!-- Парящая панель -->
+<!-- Основная панель -->
 <div class="sidebar">
-    <div class="sidebar-header">
-        <select id="busSelect">
-            <option>Загрузка...</option>
-        </select>
+    <div class="brand">
+        <span>🚌</span> ПАВЛОДАР
+    </div>
+
+    <div class="route-btn-wrapper">
+        <button class="route-btn" id="openModalBtn">
+            <span id="selectedBusLabel">Выберите маршрут</span>
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
     </div>
 
     <div class="route-info" id="routeInfo">
-        <div class="route-title">
-            <span id="routeNumber"></span>
-            <button class="toggle-btn" id="toggleDir" style="display:none">⇄ Направление</button>
+        <div class="route-info-header">
+            <div class="route-title-row">
+                <span class="route-num" id="routeNumber"></span>
+                <button class="toggle-btn" id="toggleDir" style="display:none">⇄ Направление</button>
+            </div>
+            <div class="route-dir" id="routeDirection"></div>
         </div>
-        <div class="route-dir" id="routeDirection"></div>
+        <ul class="stops-list" id="stopList"></ul>
     </div>
+</div>
 
-    <div class="status" id="status">Загрузка данных...</div>
-
-    <ul class="stops-list" id="stopList"></ul>
+<!-- Модальное окно выбора маршрута -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>Выберите автобус</h3>
+            <button class="close-btn" id="closeModalBtn">&times;</button>
+        </div>
+        <input type="text" class="modal-search" id="modalSearch" placeholder="Поиск по номеру...">
+        <div class="modal-grid" id="modalGrid"></div>
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -244,7 +317,6 @@
 
     // --- Конфигурация ---
     const API_BASE = 'http://go2.bus-pvl.kz';
-    // Каскад прокси для обхода CORS на статическом хостинге
     const PROXIES = [
         'https://proxy.cors.dev/',
         'https://cors.x2u.in/',
@@ -254,38 +326,34 @@
     ];
 
     const $ = id => document.getElementById(id);
-    const select = $('busSelect');
+    const openModalBtn = $('openModalBtn');
+    const selectedBusLabel = $('selectedBusLabel');
+    const modalOverlay = $('modalOverlay');
+    const closeModalBtn = $('closeModalBtn');
+    const modalSearch = $('modalSearch');
+    const modalGrid = $('modalGrid');
     const routeInfo = $('routeInfo');
     const routeNumEl = $('routeNumber');
     const routeDirEl = $('routeDirection');
     const toggleDirBtn = $('toggleDir');
     const stopListEl = $('stopList');
-    const statusEl = $('status');
 
-    // --- Инициализация карты (классический OSM) ---
+    // --- Карта ---
     const map = L.map('map', { zoomControl: false }).setView([52.287, 76.967], 12);
-    
-    // Контрол зума в правом верхнем углу (чтобы не перекрывать панель)
     L.control.zoom({ position: 'topright' }).addTo(map);
-
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '© OpenStreetMap'
+        attribution: '© OSM'
     }).addTo(map);
 
     let routeLayer = null;
     let routes = [];
+    let currentRouteIndex = -1;
     let directions = [];
     let dirIndex = 0;
     let reqId = 0;
 
-    function clearRouteLayer() {
-        if (routeLayer) {
-            map.removeLayer(routeLayer);
-            routeLayer = null;
-        }
-    }
-
+    // --- Утилиты ---
     function cleanName(name) {
         return String(name).replace(/^0+/, '') || '0';
     }
@@ -314,17 +382,15 @@
         throw lastErr || new Error('All proxies failed');
     }
 
-    function showStatus(text) {
-        if (text) {
-            statusEl.textContent = text;
-            statusEl.classList.add('active');
-        } else {
-            statusEl.classList.remove('active');
+    function clearMap() {
+        if (routeLayer) {
+            map.removeLayer(routeLayer);
+            routeLayer = null;
         }
     }
 
+    // --- 1. Загрузка списка маршрутов ---
     async function loadRoutes() {
-        showStatus('Загрузка маршрутов...');
         try {
             const data = await apiGet('/inforoutes', { vt: 'b', srv: 'pav' });
             routes = Array.isArray(data) ? data.filter(r => r && r.vt === 'b' && r.name) : [];
@@ -336,43 +402,54 @@
                 return cleanName(a.name).localeCompare(cleanName(b.name));
             });
 
-            select.innerHTML = '';
-            if (!routes.length) {
-                select.innerHTML = '<option>Нет маршрутов</option>';
-                showStatus('Маршруты не найдены');
-                return;
-            }
-
+            // Рендерим сетку кнопок в модалке
+            modalGrid.innerHTML = '';
             routes.forEach((r, i) => {
-                const opt = document.createElement('option');
-                opt.value = String(i);
-                opt.textContent = 'Автобус ' + cleanName(r.name);
-                select.appendChild(opt);
+                const btn = document.createElement('button');
+                btn.className = 'grid-btn';
+                btn.dataset.index = i;
+                btn.dataset.name = cleanName(r.name);
+                btn.textContent = cleanName(r.name);
+                btn.onclick = () => selectRoute(i);
+                modalGrid.appendChild(btn);
             });
 
-            showStatus('');
-            await showRoute(0);
+            // Автовыбор первого маршрута при загрузке
+            if (routes.length > 0) selectRoute(0);
+
         } catch (e) {
             console.error(e);
-            select.innerHTML = '<option>Ошибка</option>';
-            showStatus('Ошибка загрузки списка');
+            alert('Ошибка загрузки маршрутов. Проверьте соединение или прокси.');
         }
     }
 
-    async function showRoute(index) {
+    // --- 2. Выбор маршрута ---
+    function selectRoute(index) {
+        currentRouteIndex = index;
         const route = routes[index];
         if (!route) return;
 
+        // Обновляем UI
+        selectedBusLabel.textContent = 'Автобус ' + cleanName(route.name);
+        closeModal();
+        
+        // Подсвечиваем активную кнопку в сетке
+        document.querySelectorAll('.grid-btn').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.dataset.index, 10) === index);
+        });
+
+        showRouteData(route);
+    }
+
+    // --- 3. Загрузка данных маршрута ---
+    async function showRouteData(route) {
         const myReq = ++reqId;
         routeInfo.classList.add('active');
         routeNumEl.textContent = cleanName(route.name);
-        routeDirEl.textContent = 'Загрузка...';
+        routeDirEl.textContent = 'Загрузка данных...';
         toggleDirBtn.style.display = 'none';
         stopListEl.innerHTML = '';
-        clearRouteLayer();
-        
-        showStatus('Загрузка остановок...');
-        map.setView([52.287, 76.967], 12);
+        clearMap();
 
         try {
             const today = new Date();
@@ -388,28 +465,26 @@
                 timezone: 'Asia/Almaty'
             });
 
-            if (myReq !== reqId) return;
+            if (myReq !== reqId) return; // Защита от гонки запросов
 
             directions = (data && Array.isArray(data.directions)) ? data.directions : [];
             dirIndex = 0;
-            showStatus('');
             
             if (!directions.length) {
-                routeDirEl.textContent = '';
-                showStatus('Нет данных об остановках');
+                routeDirEl.textContent = 'Нет данных';
                 return;
             }
 
-            renderDirection();
+            renderRoute();
         } catch (e) {
             if (myReq !== reqId) return;
             console.error(e);
-            routeDirEl.textContent = '';
-            showStatus('Ошибка загрузки маршрута');
+            routeDirEl.textContent = 'Ошибка загрузки';
         }
     }
 
-    function renderDirection() {
+    // --- 4. Отрисовка маршрута и остановок ---
+    function renderRoute() {
         const dir = directions[dirIndex];
         if (!dir) return;
 
@@ -419,29 +494,50 @@
         const stops = Array.isArray(dir.stops) ? dir.stops : [];
         const lastIdx = stops.length - 1;
         stopListEl.innerHTML = '';
-        clearRouteLayer();
+        clearMap();
 
-        const latlngs = [];
-        const markers = [];
+        routeLayer = L.featureGroup().addTo(map);
+        const bounds = L.latLngBounds();
 
+        // 1. Отрисовка точной геометрии дорог (corridors)
+        // Если API отдает corridors, мы используем их для высокой точности
+        let hasCorridors = false;
+        if (dir.corridors && Array.isArray(dir.corridors) && dir.corridors.length > 0) {
+            dir.corridors.forEach(segment => {
+                const coords = [];
+                segment.forEach(pt => {
+                    const lat = Number(pt[0]);
+                    const lon = Number(pt[1]);
+                    if (isFinite(lat) && isFinite(lon)) {
+                        coords.push([lat, lon]);
+                        bounds.extend([lat, lon]);
+                    }
+                });
+                if (coords.length > 0) {
+                    L.polyline(coords, {
+                        color: '#1976d2',
+                        weight: 4,
+                        opacity: 0.85,
+                        lineJoin: 'round'
+                    }).addTo(routeLayer);
+                    hasCorridors = true;
+                }
+            });
+        }
+
+        // 2. Отрисовка остановок и (если нет corridors) прямое соединение
+        const stopCoords = [];
         stops.forEach((stop, idx) => {
             const zone = stop && stop.zones && stop.zones[0];
             if (!zone) return;
 
             const isTerminal = (idx === 0 || idx === lastIdx);
+            
+            // Добавляем в список
             const li = document.createElement('li');
             if (isTerminal) li.className = 'terminal';
-
-            const dot = document.createElement('span');
-            dot.className = 'stop-dot';
-
-            const name = document.createElement('span');
-            name.className = 'stop-name';
-            name.textContent = zone.name;
-
-            li.appendChild(dot);
-            li.appendChild(name);
-
+            li.innerHTML = `<span class="stop-dot"></span><span class="stop-name">${zone.name}</span>`;
+            
             const loc = zone.location;
             if (Array.isArray(loc) && loc.length >= 2) {
                 const lat = Number(loc[0]);
@@ -449,39 +545,71 @@
                 if (isFinite(lat) && isFinite(lon)) {
                     li.dataset.lat = lat;
                     li.dataset.lon = lon;
-                    latlngs.push([lat, lon]);
+                    stopCoords.push([lat, lon]);
+                    bounds.extend([lat, lon]);
 
-                    // Маркеры на карте
+                    // Маркер остановки
                     const marker = L.circleMarker([lat, lon], {
                         radius: isTerminal ? 6 : 4,
                         color: isTerminal ? '#1976d2' : '#757575',
                         fillColor: isTerminal ? '#1976d2' : '#ffffff',
                         fillOpacity: 1,
                         weight: 2
-                    }).bindPopup(zone.name);
-                    markers.push(marker);
+                    }).bindPopup(zone.name).addTo(routeLayer);
                 }
             }
             stopListEl.appendChild(li);
         });
 
-        if (!stops.length) {
-            showStatus('Остановки не найдены');
-            return;
+        // Fallback: если corridors не пришли, рисуем по остановкам
+        if (!hasCorridors && stopCoords.length > 0) {
+            L.polyline(stopCoords, {
+                color: '#1976d2',
+                weight: 4,
+                opacity: 0.85,
+                lineJoin: 'round'
+            }).addTo(routeLayer);
         }
-        if (!latlngs.length) return;
 
-        // Линия маршрута (акцентный синий цвет)
-        const polyline = L.polyline(latlngs, {
-            color: '#1976d2',
-            weight: 4,
-            opacity: 0.8,
-            lineJoin: 'round'
-        });
-
-        routeLayer = L.layerGroup([polyline, ...markers]).addTo(map);
-        map.fitBounds(polyline.getBounds(), { paddingTopLeft: [340, 40], paddingBottomRight: [40, 40] });
+        // Автоматически подгоняем карту
+        if (bounds.isValid()) {
+            const isMobile = window.innerWidth <= 600;
+            const padding = isMobile 
+                ? { paddingTopLeft: [40, 40], paddingBottomRight: [40, 280] }
+                : { paddingTopLeft: [380, 40], paddingBottomRight: [40, 40] };
+            map.fitBounds(bounds, padding);
+        }
     }
+
+    // --- События ---
+    
+    // Открытие/закрытие модалки
+    openModalBtn.addEventListener('click', () => {
+        modalOverlay.classList.add('active');
+        openModalBtn.classList.add('open');
+        modalSearch.value = '';
+        modalSearch.dispatchEvent(new Event('input')); // Сброс поиска
+        modalSearch.focus();
+    });
+
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        openModalBtn.classList.remove('open');
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) closeModal();
+    });
+
+    // Поиск
+    modalSearch.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        document.querySelectorAll('.grid-btn').forEach(btn => {
+            const name = btn.dataset.name.toLowerCase();
+            btn.style.display = name.includes(val) ? 'block' : 'none';
+        });
+    });
 
     // Клик по остановке в списке
     stopListEl.addEventListener('click', (e) => {
@@ -492,15 +620,11 @@
         map.setView([lat, lon], Math.max(map.getZoom(), 15), { animate: true });
     });
 
-    select.addEventListener('change', () => {
-        const idx = parseInt(select.value, 10);
-        if (!isNaN(idx)) showRoute(idx);
-    });
-
+    // Переключение направления
     toggleDirBtn.addEventListener('click', () => {
         if (directions.length < 2) return;
         dirIndex = (dirIndex + 1) % directions.length;
-        renderDirection();
+        renderRoute();
     });
 
     // Запуск
