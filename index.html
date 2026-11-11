@@ -6,55 +6,53 @@
     <title>PBuses · Павлодар</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%231976d2%22><path d=%22M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z%22/></svg>">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Roboto', Arial, sans-serif; background: #e5e3df; color: #212121; overflow: hidden; }
         #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; z-index: 1; }
 
-        /* ─── Иконка автобуса на карте ─── */
+        /* ─── Иконка автобуса на карте (ИСПРАВЛЕНО) ─── */
         .custom-icon-transport {
             position: relative;
-            width: 38px;
-            height: 38px;
-            margin-left: -19px; /* Центрируем относительно координаты */
-            margin-top: -19px;
+            width: 36px;
+            height: 36px;
+            /* Центрируем точку привязки ровно по центру круга */
+            margin-left: -18px; 
+            margin-top: -18px;
         }
 
-        /* Стрелка направления */
+        /* Стрелка направления (вынесена наверх) */
         .obj-dir {
             position: absolute;
-            height: 100%;
-            width: 100%;
-            transition: transform 0.6s ease; /* Плавная анимация поворота */
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
             z-index: 1;
+            transition: transform 0.3s ease;
         }
 
         .dir-arrow {
-            position: absolute;
-            top: -18px;
-            left: 50%;
-            margin-left: -10px;
-            width: 20px;
-            height: 20px;
-            fill: #1976d2; /* Синий цвет */
-            stroke: #ffffff; /* Белая обводка */
+            width: 100%;
+            height: 100%;
+            stroke: #ffffff; 
             stroke-width: 2px;
             stroke-linejoin: round;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); /* Тень для контраста */
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
         }
 
-        /* Круг с автобусом */
-        .obj-icon-b {
+        /* Круг с автобусом или цифрой */
+        .obj-icon-circle {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #1976d2;
             border-radius: 50%;
-            border: 3px solid #ffffff;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+            border: 2px solid #ffffff;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -62,25 +60,21 @@
             overflow: hidden;
         }
 
-        /* Фоновый силуэт автобуса */
-        .bus-icon-svg {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            fill: rgba(255, 255, 255, 0.15); /* Едва заметный */
-            z-index: 1;
+        /* Иконка автобуса (если выбран 1 маршрут) */
+        .bus-svg-icon {
+            width: 22px;
+            height: 22px;
+            fill: #ffffff;
         }
 
-        /* Номер маршрута */
-        .obj-icon-b span {
-            position: relative;
-            z-index: 3;
+        /* Цифра маршрута (если выбрано несколько) */
+        .obj-icon-circle span {
             font-size: 14px;
             color: #ffffff;
-            font-weight: 900;
+            font-weight: 700; /* Убрал жирность как у Габена */
             font-family: 'Roboto', sans-serif;
             line-height: 1;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
             letter-spacing: -0.5px;
         }
 
@@ -93,22 +87,17 @@
         .route-btn:hover { background: #eeeeee; }
         .route-btn svg { fill: #757575; width: 20px; height: 20px; transition: transform 0.3s; }
         .route-btn.open svg { transform: rotate(180deg); }
-        .route-info { background: #fff; display: none; flex-direction: column; }
+        
+        .route-info { background: #fff; display: none; flex-direction: column; overflow-y: auto; }
         .route-info.active { display: flex; }
         .route-info-header { padding: 16px; background: #fafafa; border-bottom: 1px solid #eee; }
         .route-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .route-num { font-size: 28px; font-weight: 700; color: #1976d2; line-height: 1; }
-        .toggle-btn { background: #ffffff; border: 1px solid #bdbdbd; border-radius: 2px; padding: 4px 8px; font-size: 12px; font-weight: 500; color: #616161; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
-        .toggle-btn svg { width: 14px; height: 14px; fill: #616161; }
-        .toggle-btn:hover { background: #eeeeee; color: #212121; border-color: #9e9e9e; }
-        .toggle-btn:hover svg { fill: #212121; }
-        .route-dir { font-size: 13px; color: #757575; line-height: 1.4; }
-        .stops-list { list-style: none; overflow-y: auto; max-height: calc(100vh - 280px); padding: 8px 0; }
-        .stops-list::-webkit-scrollbar { width: 6px; }
-        .stops-list::-webkit-scrollbar-track { background: #f1f1f1; }
-        .stops-list::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+        .route-num { font-size: 24px; font-weight: 700; line-height: 1; }
+        .route-dir { font-size: 13px; color: #757575; line-height: 1.4; margin-top: 4px; }
+
+        .stops-list { list-style: none; padding: 8px 0; }
         .stops-list li { padding: 12px 16px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.1s; }
-        .stops-list li:hover { background: #e3f2fd; }
+        .stops-list li:hover { background: #f5f5f5; }
         .stops-list li:last-child { border-bottom: none; }
         .stop-dot { width: 8px; height: 8px; border-radius: 50%; background: #bdbdbd; flex-shrink: 0; }
         .stops-list li.terminal .stop-dot { background: #1976d2; box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3); }
@@ -127,7 +116,7 @@
         .next-stops-list li { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px solid #f5f5f5; }
         .next-stops-list li .stop-time { color: #1976d2; font-weight: 500; }
 
-        /* ─── Модальное окно ─── */
+        /* ─── Модальное окно выбора маршрута ─── */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .modal-box { background: #fff; width: 90%; max-width: 500px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -137,10 +126,13 @@
         .close-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s; }
         .close-btn:hover { background: #f5f5f5; }
         .close-btn svg { fill: #757575; width: 20px; height: 20px; }
+        
         .modal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; padding: 16px; max-height: 50vh; overflow-y: auto; }
-        .grid-btn { background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 2px; padding: 14px 0; font-size: 16px; font-weight: 700; color: #424242; cursor: pointer; transition: all 0.1s; }
+        .grid-btn { background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 2px; padding: 14px 0; font-size: 16px; font-weight: 700; color: #424242; cursor: pointer; transition: all 0.1s; position: relative; }
         .grid-btn:hover { background: #e3f2fd; border-color: #1976d2; color: #1976d2; }
-        .grid-btn.active { background: #1976d2; color: #fff; border-color: #1976d2; }
+        .grid-btn.active { color: #fff; border-color: transparent; }
+        
+        .modal-hint { padding: 0 16px 16px; font-size: 12px; color: #757575; text-align: center; }
 
         /* ─── Leaflet Стили ─── */
         .leaflet-control-zoom a { background: #ffffff; color: #212121; border: none; border-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important; }
@@ -167,18 +159,14 @@
     </div>
     <div class="route-btn-wrapper">
         <button class="route-btn" id="openModalBtn">
-            <span id="selectedBusLabel">Выберите маршрут</span>
+            <span id="selectedBusLabel">Выберите маршруты (макс. 6)</span>
             <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
         </button>
     </div>
     <div class="route-info" id="routeInfo">
         <div class="route-info-header">
             <div class="route-title-row">
-                <span class="route-num" id="routeNumber"></span>
-                <button class="toggle-btn" id="toggleDir" style="display:none">
-                    <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
-                    Направление
-                </button>
+                <span class="route-num" id="routeNumber">Маршруты</span>
             </div>
             <div class="route-dir" id="routeDirection"></div>
         </div>
@@ -199,12 +187,13 @@
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <div class="modal-head">
-            <h3>Выберите автобус</h3>
+            <h3>Выберите автобусы</h3>
             <button class="close-btn" id="closeModalBtn">
                 <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
         </div>
         <div class="modal-grid" id="modalGrid"></div>
+        <div class="modal-hint" id="modalHint">Выбрано 0 из 6</div>
     </div>
 </div>
 
@@ -222,16 +211,19 @@
         'https://corsproxy.io/?'
     ];
 
+    // Палитра цветов для маршрутов
+    const COLORS = ['#1976d2', '#f57c00', '#d32f2f', '#7b1fa2', '#c2185b', '#212121'];
+
     const $ = id => document.getElementById(id);
     const openModalBtn = $('openModalBtn');
     const selectedBusLabel = $('selectedBusLabel');
     const modalOverlay = $('modalOverlay');
     const closeModalBtn = $('closeModalBtn');
     const modalGrid = $('modalGrid');
+    const modalHint = $('modalHint');
     const routeInfo = $('routeInfo');
     const routeNumEl = $('routeNumber');
     const routeDirEl = $('routeDirection');
-    const toggleDirBtn = $('toggleDir');
     const stopListEl = $('stopList');
     const busPanel = $('busPanel');
     const busPanelTitle = $('busPanelTitle');
@@ -245,16 +237,13 @@
         attribution: '© OSM'
     }).addTo(map);
 
-    let routeLayer = null;
-    let liveLayer = null;
+    let routes = []; // Список всех доступных маршрутов
+    let selectedRoutes = []; // Массив объектов { index, route, color, directions, data }
+    let routeLayers = {}; // Слои для полилиний
+    let busMarkers = {}; // Маркеры автобусов (id -> marker)
+    let liveLayer = L.featureGroup().addTo(map);
     let liveInterval = null;
-    let routes = [];
-    let currentRouteIndex = -1;
-    let directions = [];
-    let dirIndex = 0;
-    let reqId = 0;
     let lastStateTime = null;
-    let busMarkers = {};
 
     function cleanName(name) {
         return String(name).replace(/^0+/, '') || '0';
@@ -284,16 +273,7 @@
         throw lastErr || new Error('All proxies failed');
     }
 
-    function clearRouteLayer() {
-        if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
-    }
-
-    function clearLiveLayer() {
-        if (liveLayer) { map.removeLayer(liveLayer); liveLayer = null; }
-        busMarkers = {};
-    }
-
-    // ─── Загрузка маршрутов ───
+    // ─── Загрузка всех маршрутов ───
     async function loadRoutes() {
         try {
             const data = await apiGet('/inforoutes', { vt: 'b', srv: 'pav' });
@@ -305,167 +285,201 @@
                 return cleanName(a.name).localeCompare(cleanName(b.name));
             });
 
+            // Рендерим сетку
             modalGrid.innerHTML = '';
             routes.forEach((r, i) => {
                 const btn = document.createElement('button');
                 btn.className = 'grid-btn';
                 btn.dataset.index = i;
-                btn.dataset.name = cleanName(r.name);
                 btn.textContent = cleanName(r.name);
-                btn.onclick = () => selectRoute(i);
+                btn.onclick = () => toggleRoute(i);
                 modalGrid.appendChild(btn);
             });
-
-            if (routes.length > 0) selectRoute(0);
+            
+            updateModalUI();
         } catch (e) {
             console.error(e);
             alert('Ошибка загрузки маршрутов.');
         }
     }
 
-    function selectRoute(index) {
-        currentRouteIndex = index;
-        const route = routes[index];
-        if (!route) return;
-
-        selectedBusLabel.textContent = 'Автобус ' + cleanName(route.name);
-        closeModal();
-        document.querySelectorAll('.grid-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.dataset.index, 10) === index);
-        });
-
-        showRouteData(route);
-    }
-
-    // ─── Загрузка геометрии маршрута ───
-    async function showRouteData(route) {
-        const myReq = ++reqId;
-        routeInfo.classList.add('active');
-        routeNumEl.textContent = cleanName(route.name);
-        routeDirEl.textContent = 'Загрузка...';
-        toggleDirBtn.style.display = 'none';
-        stopListEl.innerHTML = '';
-        clearRouteLayer();
-        clearLiveLayer();
-        if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
-        lastStateTime = null;
-        busPanel.classList.remove('active');
-
-        try {
-            const today = new Date();
-            const p = n => String(n).padStart(2, '0');
-            const dateStr = `${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}`;
-
-            const data = await apiGet('/inforoutedetails', {
-                route: route.name,
-                vt: route.vt,
-                date: dateStr,
-                srv: 'pav',
-                lang: 'ru',
-                timezone: 'Asia/Almaty'
+    // ─── Переключение маршрута ───
+    async function toggleRoute(index) {
+        const existingIdx = selectedRoutes.findIndex(r => r.index === index);
+        
+        if (existingIdx > -1) {
+            // Удаляем
+            selectedRoutes.splice(existingIdx, 1);
+            updateModalUI();
+            await redrawAllRoutes();
+        } else {
+            // Добавляем
+            if (selectedRoutes.length >= 6) return; // Лимит
+            
+            const route = routes[index];
+            const color = COLORS[selectedRoutes.length];
+            
+            // Добавляем со статусом загрузки
+            selectedRoutes.push({
+                index: index,
+                route: route,
+                color: color,
+                directions: [],
+                loading: true
             });
-
-            if (myReq !== reqId) return;
-
-            directions = (data && Array.isArray(data.directions)) ? data.directions : [];
-            dirIndex = 0;
-
-            if (!directions.length) {
-                routeDirEl.textContent = 'Нет данных';
-                return;
-            }
-
-            renderRoute();
-            startLiveTracking(route);
-        } catch (e) {
-            if (myReq !== reqId) return;
-            console.error(e);
-            routeDirEl.textContent = 'Ошибка загрузки';
+            updateModalUI();
+            await redrawAllRoutes();
         }
     }
 
-    // ─── Отрисовка маршрута ───
-    function renderRoute() {
-        const dir = directions[dirIndex];
-        if (!dir) return;
+    // ─── Обновление UI модалки ───
+    function updateModalUI() {
+        document.querySelectorAll('.grid-btn').forEach(btn => {
+            const idx = parseInt(btn.dataset.index, 10);
+            const match = selectedRoutes.find(r => r.index === idx);
+            
+            if (match) {
+                btn.classList.add('active');
+                btn.style.backgroundColor = match.color;
+                btn.style.borderColor = match.color;
+            } else {
+                btn.classList.remove('active');
+                btn.style.backgroundColor = '#f5f5f5';
+                btn.style.borderColor = '#e0e0e0';
+            }
+        });
+        
+        modalHint.textContent = `Выбрано ${selectedRoutes.length} из 6`;
+        selectedBusLabel.textContent = selectedRoutes.length === 0 
+            ? 'Выберите маршруты (макс. 6)' 
+            : `Выбрано: ${selectedRoutes.length}`;
+            
+        if (selectedRoutes.length === 1) {
+            routeInfo.classList.add('active');
+            routeNumEl.textContent = 'Автобус ' + cleanName(selectedRoutes[0].route.name);
+            routeNumEl.style.color = selectedRoutes[0].color;
+        } else if (selectedRoutes.length > 1) {
+            routeInfo.classList.add('active');
+            routeNumEl.textContent = 'Выбрано маршрутов: ' + selectedRoutes.length;
+            routeNumEl.style.color = '#212121';
+        } else {
+            routeInfo.classList.remove('active');
+        }
+    }
 
-        routeDirEl.textContent = `${dir.begName || '—'} → ${dir.endName || '—'}`;
-        toggleDirBtn.style.display = directions.length > 1 ? 'flex' : 'none';
-
-        const stops = Array.isArray(dir.stops) ? dir.stops : [];
-        const lastIdx = stops.length - 1;
+    // ─── Отрисовка всех выбранных маршрутов ───
+    async function redrawAllRoutes() {
+        // Очищаем карту
+        map.eachLayer(layer => {
+            if (layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
+                map.removeLayer(layer);
+            }
+        });
         stopListEl.innerHTML = '';
-        clearRouteLayer();
+        
+        if (selectedRoutes.length === 0) {
+            clearLiveMarkers();
+            return;
+        }
 
-        routeLayer = L.featureGroup().addTo(map);
         const bounds = L.latLngBounds();
+        let isFirstStopList = true;
+        routeDirEl.innerHTML = '';
 
-        // Геометрия высокой четкости
-        let hasCorridors = false;
-        if (dir.corridors && Array.isArray(dir.corridors) && dir.corridors.length > 0) {
-            dir.corridors.forEach(segment => {
-                const coords = [];
-                segment.forEach(pt => {
-                    const lat = Number(pt[0]);
-                    const lon = Number(pt[1]);
-                    if (isFinite(lat) && isFinite(lon)) {
-                        coords.push([lat, lon]);
-                        bounds.extend([lat, lon]);
+        for (let i = 0; i < selectedRoutes.length; i++) {
+            const item = selectedRoutes[i];
+            
+            // Загружаем данные, если еще нет
+            if (item.directions.length === 0) {
+                try {
+                    const today = new Date();
+                    const p = n => String(n).padStart(2, '0');
+                    const dateStr = `${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}`;
+
+                    const data = await apiGet('/inforoutedetails', {
+                        route: item.route.name,
+                        vt: item.route.vt,
+                        date: dateStr,
+                        srv: 'pav',
+                        lang: 'ru',
+                        timezone: 'Asia/Almaty'
+                    });
+                    item.directions = (data && Array.isArray(data.directions)) ? data.directions : [];
+                } catch (e) {
+                    console.warn('Failed to load route details', e);
+                }
+            }
+
+            const dir = item.directions[0];
+            if (!dir) continue;
+
+            // 1. Рисуем полилинию
+            let hasCorridors = false;
+            if (dir.corridors && Array.isArray(dir.corridors)) {
+                dir.corridors.forEach(segment => {
+                    const coords = [];
+                    segment.forEach(pt => {
+                        const lat = Number(pt[0]), lon = Number(pt[1]);
+                        if (isFinite(lat) && isFinite(lon)) {
+                            coords.push([lat, lon]);
+                            bounds.extend([lat, lon]);
+                        }
+                    });
+                    if (coords.length > 1) {
+                        L.polyline(coords, {
+                            color: item.color, weight: 4, opacity: 0.8, lineJoin: 'round', lineCap: 'round'
+                        }).addTo(map);
+                        hasCorridors = true;
                     }
                 });
-                if (coords.length > 1) {
-                    L.polyline(coords, {
-                        color: '#1976d2',
-                        weight: 4,
-                        opacity: 0.9,
-                        lineJoin: 'round',
-                        lineCap: 'round'
-                    }).addTo(routeLayer);
-                    hasCorridors = true;
-                }
-            });
-        }
-
-        const stopCoords = [];
-        stops.forEach((stop, idx) => {
-            const zone = stop && stop.zones && stop.zones[0];
-            if (!zone) return;
-
-            const isTerminal = (idx === 0 || idx === lastIdx);
-            const li = document.createElement('li');
-            if (isTerminal) li.className = 'terminal';
-            li.innerHTML = `<span class="stop-dot"></span><span class="stop-name">${zone.name}</span>`;
-
-            const loc = zone.location;
-            if (Array.isArray(loc) && loc.length >= 2) {
-                const lat = Number(loc[0]);
-                const lon = Number(loc[1]);
-                if (isFinite(lat) && isFinite(lon)) {
-                    li.dataset.lat = lat;
-                    li.dataset.lon = lon;
-                    stopCoords.push([lat, lon]);
-                    bounds.extend([lat, lon]);
-
-                    L.circleMarker([lat, lon], {
-                        radius: isTerminal ? 6 : 4,
-                        color: isTerminal ? '#1976d2' : '#757575',
-                        fillColor: isTerminal ? '#1976d2' : '#ffffff',
-                        fillOpacity: 1,
-                        weight: 2
-                    }).bindPopup(zone.name).addTo(routeLayer);
-                }
             }
-            stopListEl.appendChild(li);
-        });
 
-        if (!hasCorridors && stopCoords.length > 1) {
-            L.polyline(stopCoords, {
-                color: '#1976d2',
-                weight: 4,
-                opacity: 0.9,
-                lineJoin: 'round',
-                lineCap: 'round'
-            }).addTo(routeLayer);
+            // 2. Рисуем остановки (только для первого выбранного маршрута, чтобы не засорять)
+            const stops = Array.isArray(dir.stops) ? dir.stops : [];
+            const stopCoords = [];
+            
+            if (isFirstStopList) {
+                stops.forEach((stop, idx) => {
+                    const zone = stop && stop.zones && stop.zones[0];
+                    if (!zone) return;
+                    const isTerminal = (idx === 0 || idx === stops.length - 1);
+                    
+                    // В список
+                    const li = document.createElement('li');
+                    if (isTerminal) {
+                        li.className = 'terminal';
+                        li.style.color = item.color;
+                    }
+                    li.innerHTML = `<span class="stop-dot" style="background:${isTerminal ? item.color : '#bdbdbd'}"></span><span class="stop-name">${zone.name}</span>`;
+                    stopListEl.appendChild(li);
+
+                    // На карту
+                    const loc = zone.location;
+                    if (Array.isArray(loc) && loc.length >= 2) {
+                        const lat = Number(loc[0]), lon = Number(loc[1]);
+                        if (isFinite(lat) && isFinite(lon)) {
+                            stopCoords.push([lat, lon]);
+                            bounds.extend([lat, lon]);
+                            L.circleMarker([lat, lon], {
+                                radius: isTerminal ? 6 : 4,
+                                color: isTerminal ? item.color : '#757575',
+                                fillColor: isTerminal ? item.color : '#ffffff',
+                                fillOpacity: 1, weight: 2
+                            }).bindPopup(`<b>${zone.name}</b><br>Маршрут: ${cleanName(item.route.name)}`).addTo(map);
+                        }
+                    }
+                });
+                
+                // Обновляем заголовок
+                routeDirEl.innerHTML = `<span style="color:${item.color}">${cleanName(item.route.name)}</span> ${dir.begName} → ${dir.endName}`;
+                isFirstStopList = false;
+            }
+
+            if (!hasCorridors && stopCoords.length > 1) {
+                L.polyline(stopCoords, {
+                    color: item.color, weight: 4, opacity: 0.8, lineJoin: 'round'
+                }).addTo(map);
+            }
         }
 
         if (bounds.isValid()) {
@@ -475,33 +489,73 @@
                 : { paddingTopLeft: [380, 40], paddingBottomRight: [40, 40] };
             map.fitBounds(bounds, padding);
         }
+
+        startLiveTracking();
     }
 
-    // ─── Live-трекинг ───
-    function startLiveTracking(route) {
+    // ─── Live-трекинг (универсальный) ───
+    function startLiveTracking() {
         if (liveInterval) clearInterval(liveInterval);
-        lastStateTime = null;
-        busMarkers = {};
-
-        if (!liveLayer) {
-            liveLayer = L.featureGroup().addTo(map);
-        } else {
-            liveLayer.clearLayers();
-        }
+        
+        if (selectedRoutes.length === 0) return;
 
         async function poll() {
             try {
-                const params = { vt: route.vt, srv: 'pav', route: route.name };
-                if (lastStateTime) params['last-state-time'] = lastStateTime;
+                // Запрашиваем состояние для ВСЕХ автобусов города
+                const data = await apiGet('/inforoutestates', { vt: 'b', srv: 'pav' });
+                if (!data || !data.states) return;
 
-                const data = await apiGet('/inforoutestates', params);
-                if (!data) return;
+                const activeIds = new Set();
+                const isSingle = selectedRoutes.length === 1;
 
-                if (data.time) lastStateTime = data.time;
+                data.states.forEach(state => {
+                    // Ищем, принадлежит ли этот автобус к выбранным маршрутам
+                    const selectedItem = selectedRoutes.find(r => r.route.name === state.route);
+                    if (!selectedItem) return; // Если маршрут не выбран, пропускаем
 
-                if (data.states && Array.isArray(data.states)) {
-                    updateLiveMarkers(data.states);
-                }
+                    const lat = Number(state.lat);
+                    const lon = Number(state.lon);
+                    if (!isFinite(lat) || !isFinite(lon) || lat === 0) return;
+
+                    const id = state.id;
+                    activeIds.add(id);
+                    const routeNumber = cleanName(state.route || state.name || '?');
+
+                    let marker = busMarkers[id];
+
+                    if (marker) {
+                        // Обновляем существующий маркер
+                        marker.setLatLng([lat, lon]);
+                        if (marker._icon) {
+                            const arrow = marker._icon.querySelector('.obj-dir');
+                            if (arrow) {
+                                const rotation = state.course ? Math.round(state.course) : 0;
+                                arrow.style.transform = `rotate(${rotation}deg)`;
+                            }
+                        }
+                        marker._busData = state;
+                    } else {
+                        // Создаем новый
+                        marker = L.marker([lat, lon], {
+                            icon: createBusIcon(state.course, routeNumber, selectedItem.color, isSingle),
+                            zIndexOffset: 1000
+                        });
+                        marker._busId = id;
+                        marker._busData = state;
+                        marker.on('click', () => showBusInfo(marker._busData));
+                        liveLayer.addLayer(marker);
+                        busMarkers[id] = marker;
+                    }
+                });
+
+                // Удаляем маркеры, которых больше нет или маршрут отключен
+                Object.keys(busMarkers).forEach(id => {
+                    if (!activeIds.has(id)) {
+                        liveLayer.removeLayer(busMarkers[id]);
+                        delete busMarkers[id];
+                    }
+                });
+
             } catch (e) {
                 console.warn('[Live poll error]', e.message);
             }
@@ -511,75 +565,37 @@
         liveInterval = setInterval(poll, 2000);
     }
 
-    function updateLiveMarkers(states) {
-        const activeIds = new Set();
-
-        states.forEach(state => {
-            const lat = Number(state.lat);
-            const lon = Number(state.lon);
-            if (!isFinite(lat) || !isFinite(lon) || lat === 0) return;
-
-            const id = state.id;
-            activeIds.add(id);
-            const routeNumber = cleanName(state.route || state.name || '?');
-
-            let marker = busMarkers[id];
-
-            if (marker) {
-                marker.setLatLng([lat, lon]);
-                
-                // Плавное обновление стрелки и текста без пересоздания маркера
-                if (marker._icon) {
-                    const arrow = marker._icon.querySelector('.obj-dir');
-                    const span = marker._icon.querySelector('.obj-icon-b span');
-                    if (arrow) {
-                        const rotation = state.course ? Math.round(state.course) : 0;
-                        arrow.style.transform = `rotate(${rotation}deg)`;
-                    }
-                    if (span) span.textContent = routeNumber;
-                }
-                marker._busData = state;
-            } else {
-                marker = L.marker([lat, lon], {
-                    icon: createBusIcon(state.course, routeNumber),
-                    zIndexOffset: 1000
-                });
-                marker._busId = id;
-                marker._busData = state;
-                marker.on('click', () => showBusInfo(marker._busData));
-                liveLayer.addLayer(marker);
-                busMarkers[id] = marker;
-            }
-        });
-
+    function clearLiveMarkers() {
+        if (liveInterval) clearInterval(liveInterval);
         Object.keys(busMarkers).forEach(id => {
-            if (!activeIds.has(id)) {
-                liveLayer.removeLayer(busMarkers[id]);
-                delete busMarkers[id];
-            }
+            liveLayer.removeLayer(busMarkers[id]);
+            delete busMarkers[id];
         });
     }
 
-    // ─── Иконка автобуса (Flat design, SVG, белая обводка) ───
-    function createBusIcon(course, routeName) {
+    // ─── Иконка автобуса (ИСПРАВЛЕНО) ───
+    function createBusIcon(course, routeName, color, isSingle) {
         const rotation = course ? Math.round(course) : 0;
+        
+        // Если выбран 1 маршрут - иконка автобуса. Если несколько - цифра.
+        const innerContent = isSingle
+            ? `<svg class="bus-svg-icon" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`
+            : `<span>${routeName}</span>`;
+
         return L.divIcon({
             className: 'custom-icon-transport',
             html: `
                 <div class="obj-dir" style="transform: rotate(${rotation}deg);">
-                    <svg class="dir-arrow" viewBox="0 0 24 24">
+                    <svg class="dir-arrow" viewBox="0 0 24 24" style="fill: ${color};">
                         <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
                     </svg>
                 </div>
-                <div class="obj-icon-b">
-                    <svg class="bus-icon-svg" viewBox="0 0 24 24">
-                        <path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
-                    </svg>
-                    <span>${routeName}</span>
+                <div class="obj-icon-circle" style="background-color: ${color};">
+                    ${innerContent}
                 </div>
             `,
-            iconSize: [38, 38],
-            iconAnchor: [19, 19]
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
         });
     }
 
@@ -645,18 +661,7 @@
         map.setView([parseFloat(li.dataset.lat), parseFloat(li.dataset.lon)], Math.max(map.getZoom(), 15), { animate: true });
     });
 
-    toggleDirBtn.addEventListener('click', () => {
-        if (directions.length < 2) return;
-        dirIndex = (dirIndex + 1) % directions.length;
-        renderRoute();
-        const route = routes[currentRouteIndex];
-        if (route) {
-            clearLiveLayer();
-            lastStateTime = null;
-            startLiveTracking(route);
-        }
-    });
-
+    // Старт
     loadRoutes();
 })();
 </script>
