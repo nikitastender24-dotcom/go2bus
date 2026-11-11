@@ -301,6 +301,16 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 
 @media(max-width:600px){#myLocationButton{top:16px;right:16px}#reportDialog .modal-box{max-width:calc(100vw - 32px)}}
 
+
+/* Google Material Design 1.0 · report action and single-choice menu */
+.md-report-button{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 16px;border:0;border-radius:2px;background:#fff;color:#d32f2f;box-shadow:0 2px 5px rgba(0,0,0,.26);font:500 14px Roboto,Arial,sans-serif;text-transform:uppercase;letter-spacing:.1px;cursor:pointer;transition:box-shadow .2s,background .2s}
+.md-report-button .material-icons{font-size:18px}.md-report-button:hover{background:#fafafa;box-shadow:0 4px 8px rgba(0,0,0,.24)}.md-report-button:active{background:#f5f5f5;box-shadow:0 6px 12px rgba(0,0,0,.22)}
+.md-report-button:focus-visible,.md-reason-trigger:focus-visible,.md-reason-menu button:focus-visible{outline:2px solid #1976d2;outline-offset:2px}
+.md-reason-field{position:relative;min-width:0}.md-reason-label{display:block;font-size:12px;color:#757575;margin-bottom:6px}.md-reason-trigger{width:100%;height:48px;border:0;border-bottom:1px solid #9e9e9e;border-radius:0;background:transparent;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:0 4px;color:#212121;font:400 16px Roboto,Arial,sans-serif;cursor:pointer}.md-reason-trigger[aria-expanded="true"]{border-bottom:2px solid #1976d2}.md-reason-trigger .material-icons{color:#757575}
+.md-reason-menu{position:absolute;z-index:2500;left:0;right:0;top:26px;background:#fff;box-shadow:0 8px 17px rgba(0,0,0,.2),0 3px 14px rgba(0,0,0,.12);border-radius:2px;padding:8px 0;max-height:260px;overflow-y:auto}.md-reason-menu[hidden]{display:none}.md-reason-menu button{display:block;width:100%;min-height:48px;text-align:left;border:0;background:#fff;padding:0 16px;font:400 16px Roboto,Arial,sans-serif;color:#212121;cursor:pointer}.md-reason-menu button:hover,.md-reason-menu button[aria-selected="true"]{background:#eee}
+#reportDialog .report-actions .md-flat{min-width:88px;padding:0 8px}#submitReport:disabled{opacity:.38;cursor:default}
+.md-ripple{position:absolute;border-radius:50%;background:rgba(0,0,0,.12);transform:scale(0);animation:mdRipple .5s ease-out;pointer-events:none}@keyframes mdRipple{to{transform:scale(1);opacity:0}}
+
     </style>
 </head>
 <body>
@@ -376,11 +386,11 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
     <div class="modal-head"><h3 id="reportDialogTitle">Жалоба на автобус</h3><button id="closeReportDialog" class="md-icon-button" type="button" aria-label="Закрыть"><span class="material-icons">close</span></button></div>
     <form id="reportForm" class="report-form" autocomplete="off">
       <div class="report-plate">Госномер автобуса<strong id="reportPlateText"></strong></div>
-      <label class="md-field">Причина<select id="reportReason" required><option value="">Выберите причину</option><option value="driving">Опасное вождение</option><option value="schedule">Нарушение расписания</option><option value="behavior">Поведение водителя</option><option value="condition">Состояние автобуса</option><option value="other">Другое</option></select></label>
+      <div class="md-reason-field"><span class="md-reason-label">Причина</span><button type="button" id="reasonTrigger" class="md-reason-trigger" aria-haspopup="listbox" aria-expanded="false"><span id="reasonSelected">Выберите причину</span><span class="material-icons">arrow_drop_down</span></button><div id="reasonMenu" class="md-reason-menu" role="listbox" hidden><button type="button" role="option" data-reason="driving">Опасное вождение</button><button type="button" role="option" data-reason="schedule">Нарушение расписания</button><button type="button" role="option" data-reason="behavior">Поведение водителя</button><button type="button" role="option" data-reason="condition">Состояние автобуса</button><button type="button" role="option" data-reason="other">Другое</button></div><input type="hidden" id="reportReason" value=""></div>
       <label class="md-field">Описание (необязательно)<textarea id="reportDescription" maxlength="400" placeholder="Что произошло?" rows="3"></textarea></label>
-      <p class="report-disclaimer">Жалоба сохраняется только в этом браузере. Не указывайте личные данные.</p>
+      <p class="report-disclaimer">Жалоба отправляется администратору сайта. Не указывайте личные данные.</p>
       <div id="reportStatus" class="report-status" role="status" aria-live="polite"></div>
-      <div class="report-actions"><button class="md-flat" id="cancelReport" type="button">Отмена</button><button class="md-raised" id="submitReport" type="submit"><span class="material-icons" style="font-size:18px">send</span>Отправить</button></div>
+      <div class="report-actions"><button class="md-flat" id="cancelReport" type="button">Отмена</button><button class="md-flat" id="submitReport" type="submit">Отправить</button></div>
     </form>
   </div>
 </div>
@@ -880,7 +890,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
             }
 
             if (state.stateNum && String(state.stateNum).trim()) {
-                html += `<div class="bus-report-action"><button type="button" id="busReportButton" class="md-raised"><span class="material-icons" style="font-size:20px">report_problem</span>Пожаловаться</button></div><div class="bus-report-note">Жалоба привязывается только к госномеру автобуса.</div>`;
+                html += `<div class="bus-report-action"><button type="button" id="busReportButton" class="md-report-button"><span class="material-icons" aria-hidden="true">report_problem</span>Пожаловаться</button></div><div class="bus-report-note">Жалоба привязывается только к госномеру автобуса.</div>`;
             }
             busPanelBody.innerHTML = html;
             const reportButton = $('busReportButton');
@@ -889,7 +899,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
             console.error(e);
             let fallback = '<div style="color:#757575;padding:12px 0">Не удалось загрузить следующие остановки.</div>';
             if (state.stateNum && String(state.stateNum).trim()) {
-                fallback += `<div class="bus-info-row"><strong>Госномер:</strong> ${escapeHTML(state.stateNum)}</div><div class="bus-report-action"><button id="busReportButton" type="button" class="md-raised"><span class="material-icons" style="font-size:20px">report_problem</span>Пожаловаться</button></div>`;
+                fallback += `<div class="bus-info-row"><strong>Госномер:</strong> ${escapeHTML(state.stateNum)}</div><div class="bus-report-action"><button id="busReportButton" type="button" class="md-report-button"><span class="material-icons" aria-hidden="true">report_problem</span>Пожаловаться</button></div>`;
             }
             busPanelBody.innerHTML = fallback;
             const reportButton = $('busReportButton');
@@ -945,23 +955,48 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         }, {enableHighAccuracy:true,timeout:12000,maximumAge:10000});
     });
 
-    // HTML-only версия: сохранение жалоб в localStorage браузера.
-    // Только stateNum (государственный номер автобуса), не номер маршрута.
+    // Жалобы: браузер отправляет только госномер и причину на Vercel API.
     const reportDialog = $('reportDialog');
     const reportForm = $('reportForm');
     const reportStatus = $('reportStatus');
-    const REPORT_STORAGE_KEY = 'pbuses_reports_v1';
+    const reasonTrigger = $('reasonTrigger');
+    const reasonMenu = $('reasonMenu');
     let reportPlate = '';
     const normalizePlate = value => String(value || '').normalize('NFKC').toUpperCase().replace(/[\s-]+/g, '').trim();
     const showReportStatus = (message, success = false) => {
         reportStatus.textContent = message;
         reportStatus.classList.toggle('success', success);
     };
+    function toggleReasonMenu(open) {
+        reasonMenu.hidden = !open;
+        reasonTrigger.setAttribute('aria-expanded', String(open));
+    }
+    reasonTrigger.addEventListener('click', () => toggleReasonMenu(reasonMenu.hidden));
+    reasonMenu.querySelectorAll('[data-reason]').forEach(option => option.addEventListener('click', () => {
+        $('reportReason').value = option.dataset.reason;
+        $('reasonSelected').textContent = option.textContent;
+        reasonMenu.querySelectorAll('[data-reason]').forEach(item => item.setAttribute('aria-selected', String(item === option)));
+        toggleReasonMenu(false);
+    }));
+    document.addEventListener('click', e => { if (!e.target.closest('.md-reason-field')) toggleReasonMenu(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleReasonMenu(false); if (reportDialog.classList.contains('active')) closeReportDialog(); } });
+    document.addEventListener('pointerdown', e => {
+        const button = e.target.closest('.md-report-button');
+        if (!button) return;
+        const r = button.getBoundingClientRect(), diameter = Math.max(r.width,r.height)*2;
+        const ripple = document.createElement('span'); ripple.className = 'md-ripple';
+        ripple.style.width = ripple.style.height = diameter+'px';
+        ripple.style.left = (e.clientX-r.left-diameter/2)+'px'; ripple.style.top = (e.clientY-r.top-diameter/2)+'px';
+        button.appendChild(ripple); ripple.addEventListener('animationend', () => ripple.remove());
+    });
     function openReportDialog(plate) {
         reportPlate = normalizePlate(plate);
         if (!reportPlate) return;
         reportForm.reset();
-        reportForm.querySelectorAll('select,textarea').forEach(field => field.disabled = false);
+        $('reportReason').value = '';
+        $('reasonSelected').textContent = 'Выберите причину';
+        toggleReasonMenu(false);
+        reportForm.querySelectorAll('textarea').forEach(field => field.disabled = false);
         $('submitReport').disabled = false;
         $('reportPlateText').textContent = plate;
         showReportStatus('');
@@ -970,34 +1005,32 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
     function closeReportDialog() {
         reportDialog.classList.remove('active');
         reportPlate = '';
+        toggleReasonMenu(false);
     }
     $('closeReportDialog').addEventListener('click', closeReportDialog);
     $('cancelReport').addEventListener('click', closeReportDialog);
     reportDialog.addEventListener('click', e => { if (e.target === reportDialog) closeReportDialog(); });
-    reportForm.addEventListener('submit', e => {
+    reportForm.addEventListener('submit', async e => {
         e.preventDefault();
         const reason = $('reportReason').value;
         if (!reportPlate || !['driving','schedule','behavior','condition','other'].includes(reason)) {
-            showReportStatus('Выберите причину жалобы.');
-            return;
+            showReportStatus('Выберите причину жалобы.'); return;
         }
-        const description = $('reportDescription').value.trim().slice(0, 400);
+        const button = $('submitReport');
+        button.disabled = true;
+        showReportStatus('Отправка…');
         try {
-            const existing = JSON.parse(localStorage.getItem(REPORT_STORAGE_KEY) || '[]');
-            const reports = Array.isArray(existing) ? existing : [];
-            reports.push({
-                id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
-                plate: reportPlate,
-                reason,
-                description,
-                createdAt: new Date().toISOString()
+            const response = await fetch('/api/report', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({plate:reportPlate,reason,description:$('reportDescription').value.trim().slice(0,400)})
             });
-            localStorage.setItem(REPORT_STORAGE_KEY, JSON.stringify(reports));
-            showReportStatus('Жалоба сохранена в этом браузере.', true);
-            reportForm.querySelectorAll('select,textarea').forEach(field => field.disabled = true);
-            $('submitReport').disabled = true;
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.error || 'Ошибка сервера');
+            showReportStatus('Жалоба отправлена.', true);
+            reportForm.querySelectorAll('textarea').forEach(field => field.disabled = true);
         } catch (error) {
-            showReportStatus('Не удалось сохранить жалобу: проверьте настройки хранения браузера.');
+            showReportStatus(error.message || 'Не удалось отправить жалобу.');
+            button.disabled = false;
         }
     });
 
