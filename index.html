@@ -12,57 +12,15 @@
         body { font-family: 'Roboto', Arial, sans-serif; background: #e5e3df; color: #212121; overflow: hidden; }
         #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; z-index: 1; }
 
-        /* ─── Иконка автобуса на карте ─── */
-        .custom-icon-transport {
-            /* Убрана CSS-транзишн, чтобы не конфликтовать с requestAnimationFrame */
-        }
-
-        /* Стрелка направления (идеально центрирована) */
-        .obj-dir {
-            position: absolute;
-            top: 0; left: 0;
-            width: 36px; height: 36px;
-            transform-origin: 18px 18px; /* Центр круга */
-            transition: transform 0.3s ease;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .dir-arrow {
-            position: absolute;
-            top: -16px;
-            left: 50%;
-            margin-left: -10px;
-            width: 20px;
-            height: 20px;
-            stroke: #ffffff; 
-            stroke-width: 2px;
-            stroke-linejoin: round;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
-        }
-
-        /* Круг с автобусом или цифрой */
-        .obj-icon-circle {
-            position: absolute;
-            top: 0; left: 0;
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            border: 2px solid #ffffff;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            overflow: hidden;
-        }
-
-        .bus-svg-icon { width: 22px; height: 22px; fill: #ffffff; }
-        
-        .obj-icon-circle span {
-            font-size: 14px; color: #ffffff; font-weight: 700;
-            font-family: 'Roboto', sans-serif; line-height: 1;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4); letter-spacing: -0.5px;
-        }
+        /* Material Design 1.0 — map vehicle markers */
+        .custom-icon-transport { background: transparent; border: 0; }
+        .obj-dir { position:absolute; inset:0; width:40px; height:40px; transform-origin:20px 20px; transition:transform .3s ease; pointer-events:none; z-index:1; }
+        .dir-arrow { position:absolute; top:-12px; left:12px; width:16px; height:18px; fill:#fff; filter:drop-shadow(0 1px 1px rgba(0,0,0,.18)); }
+        .obj-icon-circle { position:absolute; inset:0; width:40px; height:40px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,.26),0 1px 2px rgba(0,0,0,.18); display:flex; align-items:center; justify-content:center; z-index:2; overflow:hidden; }
+        .obj-icon-circle span { font-family:Roboto,Arial,sans-serif; font-size:14px; font-weight:500; line-height:1; letter-spacing:0; color:#fff; text-shadow:none; white-space:nowrap; }
+        .obj-icon-circle span.long-route { font-size:11px; }
+        .bus-svg-icon { width:23px; height:23px; fill:#fff; display:block; }
+        .custom-icon-transport:hover .obj-icon-circle { box-shadow:0 4px 8px rgba(0,0,0,.28),0 2px 4px rgba(0,0,0,.2); }
 
         /* ─── Левая панель ─── */
         .sidebar { position: absolute; top: 20px; left: 20px; width: 340px; max-height: calc(100vh - 40px); background: #ffffff; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 3000; display: flex; flex-direction: column; overflow: hidden; }
@@ -701,26 +659,17 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 
     // ─── Иконка автобуса ───
     function createBusIcon(course, routeName, color, isSingle) {
-        const rotation = course ? Math.round(course) : 0;
-        
+        const rotation = Number.isFinite(Number(course)) ? Number(course) : 0;
+        const safeColor = /^#[0-9a-fA-F]{3,8}$/.test(String(color)) ? color : '#1976d2';
+        const safeRoute = String(routeName ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
         const innerContent = isSingle
-            ? `<svg class="bus-svg-icon" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`
-            : `<span>${routeName}</span>`;
-
+            ? `<svg class="bus-svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5-1.5 1.5 1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`
+            : `<span class="${safeRoute.length > 3 ? 'long-route' : ''}">${safeRoute}</span>`;
         return L.divIcon({
             className: 'custom-icon-transport',
-            html: `
-                <div class="obj-dir" style="transform: rotate(${rotation}deg);">
-                    <svg class="dir-arrow" viewBox="0 0 24 24" style="fill: ${color};">
-                        <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
-                    </svg>
-                </div>
-                <div class="obj-icon-circle" style="background-color: ${color};">
-                    ${innerContent}
-                </div>
-            `,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18]
+            html: `<div class="obj-dir" style="transform:rotate(${rotation}deg)"><svg class="dir-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 21l9-4 9 4z"/></svg></div><div class="obj-icon-circle" style="background-color:${safeColor}">${innerContent}</div>`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
         });
     }
 
