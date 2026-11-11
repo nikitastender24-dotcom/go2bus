@@ -210,6 +210,68 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 .stop-panel-actions button:hover {background:#e3f2fd;}
 .stop-map-marker {background:#fff;border:2px solid currentColor;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.23);}
 
+
+/* FIX: разделы маршрутов не должны наследовать flex-строку отдельной остановки. */
+.sidebar, .route-info { min-width: 0; }
+.route-info.active { min-height: 0; overflow: hidden; }
+#stopList.stops-list {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+#stopList.stops-list > li.route-stop-section {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid var(--md-divider);
+    box-sizing: border-box;
+    cursor: default;
+}
+#stopList .route-stop-heading {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+#stopList .route-stop-badge { flex: 0 0 auto; }
+#stopList .route-stop-direction { flex: 1 1 auto; overflow-wrap: anywhere; }
+#stopList .route-stop-section > ul {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 0 8px;
+    list-style: none;
+    box-sizing: border-box;
+}
+#stopList .route-stop-section > ul > li {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+#stopList .route-stop-section .stop-name {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+@media(max-width:600px) {
+    #stopList.stops-list { max-height: none; }
+}
+
     </style>
 </head>
 <body>
