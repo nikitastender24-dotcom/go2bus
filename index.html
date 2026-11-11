@@ -22,9 +22,9 @@
             z-index: 1; pointer-events: none;
         }
         .dir-arrow {
-            position: absolute; top: -15px; left: 50%;
-            margin-left: -10px; width: 20px; height: 20px;
-            stroke: #fff; stroke-width: 1.5px; stroke-linejoin: round;
+            position: absolute; top: -12px; left: 50%;
+            margin-left: -12px; width: 24px; height: 24px;
+            stroke: #fff; stroke-width: 1.25px; stroke-linejoin: round;
             filter: drop-shadow(0 1px 2px rgba(0,0,0,.24));
         }
         .obj-icon-circle {
@@ -188,6 +188,28 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 @media(max-width:600px){.sidebar{top:0;left:0;width:min(360px,90vw);height:100dvh;max-height:100dvh;border-radius:0;box-shadow:var(--md-e4)}.brand{height:56px;min-height:56px}.bus-panel{top:0;left:0;right:0;width:100%;height:100dvh;max-height:100dvh;border-radius:0}.bus-panel-header{height:56px;min-height:56px}.bus-panel-body{max-height:calc(100dvh - 56px)}.stops-list{max-height:calc(100dvh - 180px)}#close-sidebar-btn{display:flex}.modal-box{max-width:calc(100vw - 32px)}.modal-grid{padding-left:16px;padding-right:16px}}
 @media(prefers-reduced-motion:reduce){.sidebar,.bus-panel,.modal-box,.modal-overlay,.route-btn,.grid-btn{transition:none!important}}
 
+
+/* Остановки всех выбранных маршрутов — Material Design 1 */
+.route-stop-section { border-bottom:1px solid var(--md-divider); }
+.route-stop-section:last-child {border-bottom:0}
+.route-stop-heading {padding:16px 16px 12px; display:flex; align-items:center; gap:12px; background:#fafafa; font-size:14px; font-weight:500; color:#212121;}
+.route-stop-badge {min-width:38px;height:30px;padding:0 8px;border-radius:2px;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:500;box-shadow:var(--md-e1);}
+.route-stop-direction {font-size:12px;line-height:17px;color:#757575;font-weight:400;min-width:0;}
+.stops-list .route-stop-section ul {list-style:none;padding:0 0 8px;}
+.stops-list .route-stop-section li {padding:12px 16px 12px 24px;min-height:48px;cursor:pointer;}
+.stops-list .route-stop-section li:focus-visible {outline:2px solid #1976d2;outline-offset:-2px;}
+.stop-selected {background:#e3f2fd!important;}
+.stop-details {display:flex;flex-direction:column;gap:0;}
+.stop-details-row {min-height:58px;padding:12px 24px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--md-divider);}
+.stop-details-label {font-size:12px;line-height:16px;color:#757575;margin-bottom:5px;}
+.stop-details-value {font-size:14px;line-height:20px;color:#212121;overflow-wrap:anywhere;}
+.stop-panel .bus-panel-body {padding:8px 0 16px;}
+.stop-route-chip {display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:28px;padding:0 10px;border-radius:2px;color:white;font-size:14px;font-weight:500;box-shadow:var(--md-e1);}
+.stop-panel-actions {display:flex;justify-content:flex-end;padding:12px 16px 8px;}
+.stop-panel-actions button {height:36px;min-width:88px;padding:0 16px;border:0;border-radius:2px;background:transparent;font:500 14px Roboto,Arial,sans-serif;text-transform:uppercase;color:#1976d2;cursor:pointer;}
+.stop-panel-actions button:hover {background:#e3f2fd;}
+.stop-map-marker {background:#fff;border:2px solid currentColor;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.23);}
+
     </style>
 </head>
 <body>
@@ -229,6 +251,15 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         <button class="close-bus" id="closeBusPanel" aria-label="Закрыть информацию">&times;</button>
     </div>
     <div class="bus-panel-body" id="busPanelBody"></div>
+</div>
+
+<!-- Панель выбранной остановки -->
+<div class="bus-panel stop-panel" id="stopPanel" role="dialog" aria-label="Информация об остановке">
+    <div class="bus-panel-header" id="stopPanelHeader">
+        <span id="stopPanelTitle">Остановка</span>
+        <button class="close-bus" id="closeStopPanel" aria-label="Закрыть информацию об остановке">&times;</button>
+    </div>
+    <div class="bus-panel-body" id="stopPanelBody"></div>
 </div>
 
 <!-- Модальное окно -->
@@ -277,6 +308,11 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
     const busPanelTitle = $('busPanelTitle');
     const busPanelBody = $('busPanelBody');
     const closeBusPanel = $('closeBusPanel');
+    const stopPanel = $('stopPanel');
+    const stopPanelHeader = $('stopPanelHeader');
+    const stopPanelTitle = $('stopPanelTitle');
+    const stopPanelBody = $('stopPanelBody');
+    const closeStopPanel = $('closeStopPanel');
 
     const map = L.map('map', { zoomControl: false }).setView([52.287, 76.967], 12);
     L.control.zoom({ position: 'topright' }).addTo(map);
@@ -291,6 +327,10 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
     let liveLayer = L.featureGroup().addTo(map);
     let liveInterval = null;
     let animationFrames = {};
+    let pollInProgress = false;
+    let routeRenderVersion = 0;
+    let activeStopElement = null;
+    const routeGraphics = L.layerGroup().addTo(map);
 
     // Глобальные функции для управления мобильной панелью
     window.openSidebar = function() { document.getElementById('sidebar').classList.add('active'); };
@@ -413,65 +453,106 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         }
     }
 
-    // ─── Отрисовка всех выбранных маршрутов ───
-    async function redrawAllRoutes() {
-        map.eachLayer(layer => {
-            if (layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
-                map.removeLayer(layer);
-            }
-        });
-        stopListEl.innerHTML = '';
-        
-        if (selectedRoutes.length === 0) {
-            clearLiveMarkers();
-            return;
+    // Защита от внедрения HTML в данные, пришедшие от API
+    function escapeHTML(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[ch]));
+    }
+
+    function showStopInfo(zone, routeItem, dir, element, location) {
+        busPanel.classList.remove('active');
+        stopPanel.classList.add('active');
+        stopPanelHeader.style.backgroundColor = routeItem.color;
+        stopPanelTitle.textContent = zone.name || 'Остановка';
+        if (activeStopElement) activeStopElement.classList.remove('stop-selected');
+        activeStopElement = element || null;
+        if (activeStopElement) activeStopElement.classList.add('stop-selected');
+        if (window.innerWidth <= 600) closeSidebar();
+        const direction = [dir.begName, dir.endName].filter(Boolean).join(' → ') || '—';
+        stopPanelBody.innerHTML = `
+            <div class="stop-details">
+                <div class="stop-details-row"><span class="stop-details-label">Маршрут</span>
+                    <span class="stop-details-value"><span class="stop-route-chip" style="background:${routeItem.color}">${escapeHTML(cleanName(routeItem.route.name))}</span></span></div>
+                <div class="stop-details-row"><span class="stop-details-label">Остановка</span>
+                    <span class="stop-details-value">${escapeHTML(zone.name || '—')}</span></div>
+                <div class="stop-details-row"><span class="stop-details-label">Направление</span>
+                    <span class="stop-details-value">${escapeHTML(direction)}</span></div>
+            </div>
+            ${location ? '<div class="stop-panel-actions"><button type="button" id="focusStopBtn">На карте</button></div>' : ''}`;
+        if (location) {
+            $('focusStopBtn').onclick = () => {
+                map.setView(location, Math.max(map.getZoom(), 16), {animate:true});
+                if (window.innerWidth <= 600) stopPanel.classList.remove('active');
+            };
         }
+    }
+
+    // Все выбранные маршруты получают собственный список остановок и маркеры
+    async function redrawAllRoutes() {
+        const currentVersion = ++routeRenderVersion;
+        routeGraphics.clearLayers();
+        stopListEl.innerHTML = '';
+        routeDirEl.textContent = '';
+        stopPanel.classList.remove('active');
+        activeStopElement = null;
+        clearLiveMarkers();
+        if (selectedRoutes.length === 0) return;
 
         const bounds = L.latLngBounds();
-        let isFirstStopList = true;
-        routeDirEl.innerHTML = '';
+        const activeRoutes = [...selectedRoutes];
+        const today = new Date();
+        const p = n => String(n).padStart(2, '0');
+        const dateStr = `${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}`;
 
-        for (let i = 0; i < selectedRoutes.length; i++) {
-            const item = selectedRoutes[i];
-            
-            if (item.directions.length === 0) {
-                try {
-                    const today = new Date();
-                    const p = n => String(n).padStart(2, '0');
-                    const dateStr = `${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}`;
-
-                    const data = await apiGet('/inforoutedetails', {
-                        route: item.route.name,
-                        vt: item.route.vt,
-                        date: dateStr,
-                        srv: 'pav',
-                        lang: 'ru',
-                        timezone: 'Asia/Almaty'
-                    });
-                    item.directions = (data && Array.isArray(data.directions)) ? data.directions : [];
-                } catch (e) {
-                    console.warn('Failed to load route details', e);
-                }
+        // Загружаем параллельно, но отображаем строго в порядке выбора
+        await Promise.all(activeRoutes.map(async item => {
+            if (item.directions && item.directions.length) return;
+            try {
+                const data = await apiGet('/inforoutedetails', {
+                    route:item.route.name, vt:item.route.vt, date:dateStr,
+                    srv:'pav', lang:'ru', timezone:'Asia/Almaty'
+                });
+                item.directions = (data && Array.isArray(data.directions)) ? data.directions : [];
+            } catch (e) {
+                console.warn('Failed to load route details', item.route.name, e);
+                item.directions = [];
             }
+        }));
+        if (currentVersion !== routeRenderVersion) return;
 
+        activeRoutes.forEach(item => {
             const dir = item.directions[0];
-            if (!dir) continue;
+            const section = document.createElement('li');
+            section.className = 'route-stop-section';
+            const heading = document.createElement('div');
+            heading.className = 'route-stop-heading';
+            const badge = document.createElement('span');
+            badge.className = 'route-stop-badge';
+            badge.style.backgroundColor = item.color;
+            badge.textContent = cleanName(item.route.name);
+            const direction = document.createElement('span');
+            direction.className = 'route-stop-direction';
+            direction.textContent = dir ? [dir.begName, dir.endName].filter(Boolean).join(' → ') : 'Остановки недоступны';
+            heading.append(badge, direction);
+            section.appendChild(heading);
+            const ul = document.createElement('ul');
+            section.appendChild(ul);
+            stopListEl.appendChild(section);
+            if (!dir) return;
 
             let hasCorridors = false;
-            if (dir.corridors && Array.isArray(dir.corridors)) {
+            if (Array.isArray(dir.corridors)) {
                 dir.corridors.forEach(segment => {
-                    const coords = [];
-                    segment.forEach(pt => {
-                        const lat = Number(pt[0]), lon = Number(pt[1]);
-                        if (isFinite(lat) && isFinite(lon)) {
-                            coords.push([lat, lon]);
-                            bounds.extend([lat, lon]);
-                        }
-                    });
+                    if (!Array.isArray(segment)) return;
+                    const coords = segment.map(pt => [Number(pt[0]), Number(pt[1])])
+                        .filter(c => c.every(Number.isFinite));
                     if (coords.length > 1) {
-                        L.polyline(coords, {
-                            color: item.color, weight: 4, opacity: 0.8, lineJoin: 'round', lineCap: 'round'
-                        }).addTo(map);
+                        routeGraphics.addLayer(L.polyline(coords, {
+                            color:item.color, weight:4, opacity:.8,
+                            lineJoin:'round', lineCap:'round'
+                        }));
+                        coords.forEach(c => bounds.extend(c));
                         hasCorridors = true;
                     }
                 });
@@ -479,204 +560,148 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 
             const stops = Array.isArray(dir.stops) ? dir.stops : [];
             const stopCoords = [];
-            
-            if (isFirstStopList) {
-                stops.forEach((stop, idx) => {
-                    const zone = stop && stop.zones && stop.zones[0];
-                    if (!zone) return;
-                    const isTerminal = (idx === 0 || idx === stops.length - 1);
-                    
-                    const li = document.createElement('li');
-                    if (isTerminal) li.className = 'terminal';
-                    li.innerHTML = `<span class="stop-dot" style="background:${isTerminal ? item.color : '#bdbdbd'}"></span><span class="stop-name">${zone.name}</span>`;
-                    stopListEl.appendChild(li);
+            stops.forEach((stop, index) => {
+                const zone = stop && stop.zones && stop.zones[0];
+                if (!zone) return;
+                const terminal = index === 0 || index === stops.length - 1;
+                const li = document.createElement('li');
+                if (terminal) li.classList.add('terminal');
+                li.tabIndex = 0;
+                li.setAttribute('role', 'button');
+                li.innerHTML = '<span class="stop-dot"></span><span class="stop-name"></span>';
+                li.querySelector('.stop-dot').style.backgroundColor = terminal ? item.color : '#bdbdbd';
+                li.querySelector('.stop-name').textContent = zone.name || 'Без названия';
+                ul.appendChild(li);
 
-                    const loc = zone.location;
-                    if (Array.isArray(loc) && loc.length >= 2) {
-                        const lat = Number(loc[0]), lon = Number(loc[1]);
-                        if (isFinite(lat) && isFinite(lon)) {
-                            stopCoords.push([lat, lon]);
-                            bounds.extend([lat, lon]);
-                            L.circleMarker([lat, lon], {
-                                radius: isTerminal ? 6 : 4,
-                                color: isTerminal ? item.color : '#757575',
-                                fillColor: isTerminal ? item.color : '#ffffff',
-                                fillOpacity: 1, weight: 2
-                            }).bindPopup(`<b>${zone.name}</b><br>Маршрут: ${cleanName(item.route.name)}`).addTo(map);
-                        }
+                const loc = zone.location;
+                let coord = null;
+                if (Array.isArray(loc) && loc.length >= 2) {
+                    const lat = Number(loc[0]), lon = Number(loc[1]);
+                    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                        coord = [lat, lon];
+                        stopCoords.push(coord);
+                        bounds.extend(coord);
+                        const marker = L.circleMarker(coord, {
+                            radius:terminal ? 6 : 4, color:item.color,
+                            fillColor:terminal ? item.color : '#fff', fillOpacity:1, weight:2
+                        });
+                        marker.on('click', () => showStopInfo(zone, item, dir, li, coord));
+                        routeGraphics.addLayer(marker);
                     }
+                }
+                const location = coord;
+                li.addEventListener('click', () => {
+                    showStopInfo(zone, item, dir, li, location);
+                    if (location) map.panTo(location, {animate:true});
                 });
-                
-                routeDirEl.innerHTML = `<span style="color:${item.color}">${cleanName(item.route.name)}</span> ${dir.begName} → ${dir.endName}`;
-                isFirstStopList = false;
-            }
-
+                li.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {e.preventDefault();li.click();}
+                });
+            });
             if (!hasCorridors && stopCoords.length > 1) {
-                L.polyline(stopCoords, {
-                    color: item.color, weight: 4, opacity: 0.8, lineJoin: 'round'
-                }).addTo(map);
+                routeGraphics.addLayer(L.polyline(stopCoords, {
+                    color:item.color, weight:4, opacity:.8, lineJoin:'round'
+                }));
             }
-        }
-
+        });
         if (bounds.isValid()) {
-            const isMobile = window.innerWidth <= 600;
-            const padding = isMobile
-                ? { paddingTopLeft: [20, 20], paddingBottomRight: [20, 80] }
-                : { paddingTopLeft: [380, 40], paddingBottomRight: [40, 40] };
+            const padding = window.innerWidth <= 600
+                ? {paddingTopLeft:[20,20],paddingBottomRight:[20,80]}
+                : {paddingTopLeft:[380,40],paddingBottomRight:[40,40]};
             map.fitBounds(bounds, padding);
         }
-
         startLiveTracking();
     }
 
-    // ─── Live-трекинг (с плавной интерполяцией по дорогам) ───
+    // Live: каждый кадр интерполируем от ТЕКУЩЕЙ позиции к новой координате.
+    // Не перемещаем автобус обратно по prevWays и не делаем мгновенный setLatLng.
+    function animateBus(marker, destination, duration = 2800) {
+        const id = marker._busId;
+        if (animationFrames[id]) cancelAnimationFrame(animationFrames[id]);
+        const from = marker.getLatLng();
+        const to = L.latLng(destination);
+        if (from.distanceTo(to) < 0.3) return;
+        const start = performance.now();
+        const step = now => {
+            if (!busMarkers[id] || busMarkers[id] !== marker) return;
+            const t = Math.min(1, (now - start) / duration);
+            // Равномерное движение без резкого ускорения на каждом обновлении
+            marker.setLatLng([
+                from.lat + (to.lat - from.lat) * t,
+                from.lng + (to.lng - from.lng) * t
+            ]);
+            if (t < 1) animationFrames[id] = requestAnimationFrame(step);
+            else delete animationFrames[id];
+        };
+        animationFrames[id] = requestAnimationFrame(step);
+    }
+
     function startLiveTracking() {
         if (liveInterval) clearInterval(liveInterval);
         if (selectedRoutes.length === 0) return;
-
+        const ownVersion = routeRenderVersion;
         async function poll() {
+            if (pollInProgress || ownVersion !== routeRenderVersion) return;
+            pollInProgress = true;
             try {
-                const data = await apiGet('/inforoutestates', { vt: 'b', srv: 'pav' });
-                if (!data || !data.states) return;
-
+                const data = await apiGet('/inforoutestates', {vt:'b',srv:'pav'});
+                if (ownVersion !== routeRenderVersion) return;
+                if (!data || !Array.isArray(data.states)) return;
                 const activeIds = new Set();
                 const isSingle = selectedRoutes.length === 1;
-
                 data.states.forEach(state => {
-                    const selectedItem = selectedRoutes.find(r => r.route.name === state.route);
-                    if (!selectedItem) return;
-
-                    const lat = Number(state.lat);
-                    const lon = Number(state.lon);
-                    if (!isFinite(lat) || !isFinite(lon) || lat === 0) return;
-
-                    const id = state.id;
+                    const item = selectedRoutes.find(r => r.route.name === state.route);
+                    if (!item) return;
+                    const lat = Number(state.lat), lon = Number(state.lon);
+                    if (!Number.isFinite(lat) || !Number.isFinite(lon) || !lat || !lon) return;
+                    const id = String(state.id);
                     activeIds.add(id);
-                    const routeNumber = cleanName(state.route || state.name || '?');
-
-                    // Извлекаем путь (prevWays) для плавной езды по дорогам
-                    const flatPath = [];
-                    if (state.prevWays && Array.isArray(state.prevWays)) {
-                        state.prevWays.forEach(segment => {
-                            segment.forEach(pt => {
-                                const pLat = pt.lat !== undefined ? pt.lat : pt[0];
-                                const pLon = pt.lng !== undefined ? pt.lng : pt[1];
-                                if (isFinite(pLat) && isFinite(pLon)) {
-                                    flatPath.push(L.latLng(pLat, pLon));
-                                }
-                            });
-                        });
-                    }
-                    flatPath.push(L.latLng(lat, lon)); // Конечная точка
-
+                    const routeName = cleanName(state.route || state.name || '?');
                     let marker = busMarkers[id];
-
+                    const iconKey = [routeName, item.color, isSingle, state.course].join('|');
                     if (marker) {
-                        marker.setIcon(createBusIcon(state.course, routeNumber, selectedItem.color, isSingle));
-                        marker._busData = state;
-                        
-                        if (flatPath.length > 1) {
-                            slideMarker(marker, flatPath, 2500); // 2.5 сек анимация
-                        } else {
-                            marker.setLatLng([lat, lon]);
+                        // Не пересоздаём DOM маркера без необходимости
+                        if (marker._iconKey !== iconKey) {
+                            marker.setIcon(createBusIcon(state.course, routeName, item.color, isSingle));
+                            marker._iconKey = iconKey;
                         }
+                        marker._busData = state;
+                        animateBus(marker, [lat, lon]);
                     } else {
-                        marker = L.marker([lat, lon], {
-                            icon: createBusIcon(state.course, routeNumber, selectedItem.color, isSingle),
-                            zIndexOffset: 1000
+                        marker = L.marker([lat,lon], {
+                            icon:createBusIcon(state.course,routeName,item.color,isSingle),
+                            zIndexOffset:1000
                         });
                         marker._busId = id;
+                        marker._iconKey = iconKey;
                         marker._busData = state;
                         marker.on('click', () => showBusInfo(marker._busData));
                         liveLayer.addLayer(marker);
                         busMarkers[id] = marker;
                     }
                 });
-
                 Object.keys(busMarkers).forEach(id => {
-                    if (!activeIds.has(id)) {
-                        liveLayer.removeLayer(busMarkers[id]);
-                        delete busMarkers[id];
-                        if (animationFrames[id]) cancelAnimationFrame(animationFrames[id]);
-                    }
+                    if (activeIds.has(id)) return;
+                    if (animationFrames[id]) cancelAnimationFrame(animationFrames[id]);
+                    delete animationFrames[id];
+                    liveLayer.removeLayer(busMarkers[id]);
+                    delete busMarkers[id];
                 });
-
             } catch (e) {
                 console.warn('[Live poll error]', e.message);
-            }
+            } finally { pollInProgress = false; }
         }
-
         poll();
         liveInterval = setInterval(poll, 3000);
     }
 
     function clearLiveMarkers() {
         if (liveInterval) clearInterval(liveInterval);
-        Object.keys(busMarkers).forEach(id => {
-            liveLayer.removeLayer(busMarkers[id]);
-            delete busMarkers[id];
-            if (animationFrames[id]) cancelAnimationFrame(animationFrames[id]);
-        });
-    }
-
-    // ─── Функция плавного полета по маршруту ───
-    function slideMarker(marker, path, duration) {
-        const id = marker._busId;
-        if (animationFrames[id]) cancelAnimationFrame(animationFrames[id]);
-
-        if (!path || path.length < 2) return;
-
-        const startTime = performance.now();
-        let totalDistance = 0;
-        const distances = [0];
-        
-        for (let i = 0; i < path.length - 1; i++) {
-            totalDistance += path[i].distanceTo(path[i+1]);
-            distances.push(totalDistance);
-        }
-
-        if (totalDistance === 0) return;
-
-        function step(time) {
-            const elapsed = time - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const targetDist = progress * totalDistance;
-
-            let i = 0;
-            while (i < distances.length - 1 && distances[i+1] < targetDist) {
-                i++;
-            }
-            if (i >= distances.length - 1) {
-                marker.setLatLng(path[path.length - 1]);
-                return;
-            }
-
-            const segDist = distances[i+1] - distances[i];
-            const segProgress = segDist === 0 ? 0 : (targetDist - distances[i]) / segDist;
-            
-            const p1 = path[i];
-            const p2 = path[i+1];
-            const currentLat = p1.lat + (p2.lat - p1.lat) * segProgress;
-            const currentLng = p1.lng + (p2.lng - p1.lng) * segProgress;
-            
-            marker.setLatLng([currentLat, currentLng]);
-
-            if (marker._icon) {
-                const arrow = marker._icon.querySelector('.obj-dir');
-                if (arrow) {
-                    const dy = p2.lat - p1.lat;
-                    const dx = p2.lng - p1.lng;
-                    const angle = Math.atan2(dx, dy) * 180 / Math.PI;
-                    arrow.style.transform = `rotate(${angle}deg)`;
-                }
-            }
-
-            if (progress < 1) {
-                animationFrames[id] = requestAnimationFrame(step);
-            }
-        }
-
-        animationFrames[id] = requestAnimationFrame(step);
+        liveInterval = null;
+        for (const id of Object.keys(animationFrames)) cancelAnimationFrame(animationFrames[id]);
+        animationFrames = {};
+        liveLayer.clearLayers();
+        busMarkers = {};
     }
 
     // ─── Иконка автобуса ───
@@ -692,7 +717,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
             html: `
                 <div class="obj-dir" style="transform: rotate(${rotation}deg);">
                     <svg class="dir-arrow" viewBox="0 0 24 24" style="fill: ${color};">
-                        <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
+                        <path d="M12 5L2 22H22Z" />
                     </svg>
                 </div>
                 <div class="obj-icon-circle" style="background-color: ${color};">
@@ -710,6 +735,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         const color = match ? match.color : '#1976d2';
         
         busPanelHeader.style.backgroundColor = color; // Динамический акцент
+        stopPanel.classList.remove('active');
         busPanel.classList.add('active');
         
         // На мобильных скрываем левую панель
@@ -768,6 +794,11 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 
     closeBusPanel.addEventListener('click', () => {
         busPanel.classList.remove('active');
+    });
+    closeStopPanel.addEventListener('click', () => {
+        stopPanel.classList.remove('active');
+        if (activeStopElement) activeStopElement.classList.remove('stop-selected');
+        activeStopElement = null;
     });
 
     loadRoutes();
