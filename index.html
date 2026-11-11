@@ -167,13 +167,54 @@
             
             .stops-list { max-height: calc(100vh - 180px); }
         }
+
+/* PBuses — Material Design 1.0 (2014–2015) */
+:root{--md-primary:#1976d2;--md-primary-dark:#1565c0;--md-accent:#ff4081;--md-text:#212121;--md-secondary:#757575;--md-divider:rgba(0,0,0,.12);--md-e1:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.24);--md-e2:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);--md-e3:0 10px 20px rgba(0,0,0,.19),0 6px 6px rgba(0,0,0,.23);--md-e4:0 14px 28px rgba(0,0,0,.25),0 10px 10px rgba(0,0,0,.22)}
+body{font-family:Roboto,Arial,sans-serif;color:var(--md-text);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;-webkit-tap-highlight-color:transparent}
+button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-accent);outline-offset:2px}
+.sidebar{top:16px;left:16px;width:352px;max-height:calc(100vh - 32px);border-radius:2px;box-shadow:var(--md-e2);background:#fff}
+.brand{height:64px;min-height:64px;background:var(--md-primary);font-size:20px;font-weight:500;letter-spacing:.1px;padding:0 20px;gap:16px;box-shadow:var(--md-e1);z-index:1}
+.brand svg{width:24px;height:24px;flex-shrink:0}
+.route-btn-wrapper{padding:16px;background:#fff;border-bottom:1px solid var(--md-divider)}
+.route-btn{min-height:48px;border:0;border-radius:2px;padding:0 16px;background:#eee;color:var(--md-text);font-size:14px;font-weight:500;letter-spacing:.1px;box-shadow:var(--md-e1);transition:background .18s,box-shadow .18s}
+.route-btn:hover{background:#e0e0e0;box-shadow:var(--md-e2)}.route-btn:active{background:#d6d6d6;box-shadow:var(--md-e1)}
+.route-btn svg{width:24px;height:24px;fill:#616161}
+.route-info-header{padding:20px 16px 16px;background:#fff;border-bottom:1px solid var(--md-divider)}
+.route-num{font-size:24px;font-weight:400;line-height:32px}.route-dir{font-size:14px;line-height:20px;color:var(--md-secondary);margin-top:4px}
+.stops-list{padding:8px 0}.stops-list li{min-height:48px;padding:12px 16px;border-bottom:0;font-size:14px;line-height:20px;transition:background .15s}.stops-list li:hover{background:#f5f5f5}.stops-list li:active{background:#eee}
+.stop-dot{width:8px;height:8px}.stops-list li.terminal .stop-dot{box-shadow:none}
+.bus-panel{top:16px;right:16px;width:320px;max-height:calc(100vh - 32px);border-radius:2px;box-shadow:var(--md-e3)}
+.bus-panel-header{height:64px;min-height:64px;padding:0 16px 0 24px;font-size:20px;font-weight:500;background:var(--md-primary);box-shadow:var(--md-e1)}
+.bus-panel-body{padding:20px 24px;max-height:calc(100vh - 112px)}.bus-info-row{font-size:14px;line-height:22px;margin-bottom:12px;color:#616161}.bus-info-row strong{font-weight:500;color:#212121}
+.next-stops-title{font-size:14px;font-weight:500;letter-spacing:.1px;color:var(--md-primary);text-transform:none;margin:24px 0 8px;padding-bottom:12px;border-bottom:1px solid var(--md-divider)}
+.next-stops-list li{min-height:48px;align-items:center;padding:10px 0;border-bottom:1px solid var(--md-divider);font-size:14px;gap:12px}
+.next-stops-list li .stop-time{white-space:nowrap}
+.modal-overlay{background:rgba(0,0,0,.54);transition:opacity .2s cubic-bezier(.4,0,.2,1)}
+.modal-box{width:calc(100% - 32px);max-width:520px;border-radius:2px;box-shadow:var(--md-e4);transform:translateY(16px);transition:transform .24s cubic-bezier(.4,0,.2,1)}
+.modal-head{min-height:72px;padding:20px 16px 12px 24px;border-bottom:0}.modal-head h3{font-size:20px;line-height:28px;font-weight:500}
+.close-btn,.bus-panel-header .close-bus,#close-sidebar-btn{width:40px;height:40px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;transition:background .18s}
+.close-btn svg{width:24px;height:24px;fill:#757575}.close-btn:hover{background:rgba(0,0,0,.08)}
+.bus-panel-header .close-bus,#close-sidebar-btn{color:#fff;font-size:26px;font-weight:300}.bus-panel-header .close-bus:hover,#close-sidebar-btn:hover{background:rgba(255,255,255,.14)}
+.modal-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;padding:12px 24px 20px;max-height:50vh}
+.grid-btn{min-height:48px;padding:8px 4px;border:0;border-radius:2px;background:#eee;box-shadow:var(--md-e1);font-size:14px;font-weight:500;transition:background .15s,box-shadow .15s,color .15s}
+.grid-btn:hover{background:#e3f2fd;box-shadow:var(--md-e2);color:var(--md-primary)}.grid-btn.active{color:#fff;box-shadow:var(--md-e2)}.grid-btn.active:hover{color:#fff;filter:brightness(.94)}
+.modal-hint{padding:12px 24px 24px;text-align:right;font-size:14px;color:var(--md-secondary)}
+#mobile-menu-btn{width:56px;height:56px;right:16px;background:var(--md-accent);box-shadow:var(--md-e3);border-radius:50%;transition:box-shadow .2s,background .2s}
+#mobile-menu-btn:hover{box-shadow:var(--md-e4);background:#f50057}#mobile-menu-btn svg{fill:#fff;width:24px;height:24px}
+.leaflet-control-zoom{border:0!important;box-shadow:var(--md-e2)!important;border-radius:2px!important;overflow:hidden}.leaflet-control-zoom a{width:36px!important;height:36px!important;line-height:36px!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#424242!important}.leaflet-control-zoom a+a{border-top:1px solid var(--md-divider)!important}
+.leaflet-control-attribution{font-family:Roboto,Arial,sans-serif!important;background:rgba(255,255,255,.9)!important;border-radius:2px 0 0 0!important}
+.obj-icon-circle{box-shadow:var(--md-e2);border:2px solid white}.obj-icon-circle span{text-shadow:none;letter-spacing:0}
+@media(max-width:600px){.sidebar{top:0;left:0;width:min(360px,90vw);height:100dvh;max-height:100dvh;border-radius:0;box-shadow:var(--md-e4)}.brand{height:56px;min-height:56px}.bus-panel{top:0;left:0;right:0;width:100%;height:100dvh;max-height:100dvh;border-radius:0}.bus-panel-header{height:56px;min-height:56px}.bus-panel-body{max-height:calc(100dvh - 56px)}.stops-list{max-height:calc(100dvh - 180px)}#close-sidebar-btn{display:flex}.modal-box{max-width:calc(100vw - 32px)}.modal-grid{padding-left:16px;padding-right:16px}}
+@media(prefers-reduced-motion:reduce){.sidebar,.bus-panel,.modal-box,.modal-overlay,.route-btn,.grid-btn{transition:none!important}}
+
     </style>
 </head>
 <body>
 <div id="map"></div>
 
 <!-- Кнопка открытия меню на мобильных -->
-<button id="mobile-menu-btn" onclick="openSidebar()">
+<button id="mobile-menu-btn" onclick="openSidebar()" aria-label="Открыть маршруты">
     <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
 </button>
 
@@ -182,7 +223,7 @@
     <div class="brand">
         <svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
         PBuses
-        <button id="close-sidebar-btn" onclick="closeSidebar()">&times;</button>
+        <button id="close-sidebar-btn" onclick="closeSidebar()" aria-label="Закрыть меню">&times;</button>
     </div>
     <div class="route-btn-wrapper">
         <button class="route-btn" id="openModalBtn">
@@ -205,7 +246,7 @@
 <div class="bus-panel" id="busPanel">
     <div class="bus-panel-header" id="busPanelHeader">
         <span id="busPanelTitle">Автобус</span>
-        <button class="close-bus" id="closeBusPanel">&times;</button>
+        <button class="close-bus" id="closeBusPanel" aria-label="Закрыть информацию">&times;</button>
     </div>
     <div class="bus-panel-body" id="busPanelBody"></div>
 </div>
@@ -215,7 +256,7 @@
     <div class="modal-box">
         <div class="modal-head">
             <h3>Выберите автобусы</h3>
-            <button class="close-btn" id="closeModalBtn">
+            <button class="close-btn" id="closeModalBtn" aria-label="Закрыть выбор маршрутов">
                 <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
         </div>
