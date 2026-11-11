@@ -6,11 +6,83 @@
     <title>PBuses · Павлодар</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%231976d2%22><path d=%22M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z%22/></svg>">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Roboto', Arial, sans-serif; background: #e5e3df; color: #212121; overflow: hidden; }
         #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; z-index: 1; }
+
+        /* ─── Иконка автобуса на карте ─── */
+        .custom-icon-transport {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            margin-left: -19px; /* Центрируем относительно координаты */
+            margin-top: -19px;
+        }
+
+        /* Стрелка направления */
+        .obj-dir {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            transition: transform 0.6s ease; /* Плавная анимация поворота */
+            z-index: 1;
+        }
+
+        .dir-arrow {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            margin-left: -10px;
+            width: 20px;
+            height: 20px;
+            fill: #1976d2; /* Синий цвет */
+            stroke: #ffffff; /* Белая обводка */
+            stroke-width: 2px;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); /* Тень для контраста */
+        }
+
+        /* Круг с автобусом */
+        .obj-icon-b {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1976d2;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        /* Фоновый силуэт автобуса */
+        .bus-icon-svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            fill: rgba(255, 255, 255, 0.15); /* Едва заметный */
+            z-index: 1;
+        }
+
+        /* Номер маршрута */
+        .obj-icon-b span {
+            position: relative;
+            z-index: 3;
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: 900;
+            font-family: 'Roboto', sans-serif;
+            line-height: 1;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            letter-spacing: -0.5px;
+        }
 
         /* ─── Левая панель ─── */
         .sidebar { position: absolute; top: 20px; left: 20px; width: 340px; max-height: calc(100vh - 40px); background: #ffffff; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; display: flex; flex-direction: column; overflow: hidden; }
@@ -42,7 +114,7 @@
         .stops-list li.terminal .stop-dot { background: #1976d2; box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3); }
         .stops-list li.terminal { font-weight: 500; color: #1976d2; }
 
-        /* ─── Правая панель (инфо) ─── */
+        /* ─── Правая панель ─── */
         .bus-panel { position: absolute; top: 20px; right: 20px; width: 300px; max-height: calc(100vh - 40px); background: #ffffff; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
         .bus-panel.active { display: flex; }
         .bus-panel-header { background: #1976d2; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 500; }
@@ -54,14 +126,6 @@
         .next-stops-list { list-style: none; }
         .next-stops-list li { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px solid #f5f5f5; }
         .next-stops-list li .stop-time { color: #1976d2; font-weight: 500; }
-
-        /* ─── Иконка автобуса на карте ─── */
-        .leaflet-bus-marker { background: none; border: none; }
-        .bus-marker-container { position: relative; width: 32px; height: 32px; }
-        .bus-arrow-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; }
-        .bus-arrow-svg { position: absolute; top: -10px; left: 50%; margin-left: -6px; width: 12px; height: 12px; fill: #1976d2; stroke: #fff; stroke-width: 1px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
-        .bus-circle { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1976d2; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 2; }
-        .bus-circle svg { width: 18px; height: 18px; fill: #fff; }
 
         /* ─── Модальное окно ─── */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -293,7 +357,12 @@
             const dateStr = `${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}`;
 
             const data = await apiGet('/inforoutedetails', {
-                route: route.name, vt: route.vt, date: dateStr, srv: 'pav', lang: 'ru', timezone: 'Asia/Almaty'
+                route: route.name,
+                vt: route.vt,
+                date: dateStr,
+                srv: 'pav',
+                lang: 'ru',
+                timezone: 'Asia/Almaty'
             });
 
             if (myReq !== reqId) return;
@@ -346,7 +415,11 @@
                 });
                 if (coords.length > 1) {
                     L.polyline(coords, {
-                        color: '#1976d2', weight: 4, opacity: 0.9, lineJoin: 'round', lineCap: 'round'
+                        color: '#1976d2',
+                        weight: 4,
+                        opacity: 0.9,
+                        lineJoin: 'round',
+                        lineCap: 'round'
                     }).addTo(routeLayer);
                     hasCorridors = true;
                 }
@@ -387,7 +460,11 @@
 
         if (!hasCorridors && stopCoords.length > 1) {
             L.polyline(stopCoords, {
-                color: '#1976d2', weight: 4, opacity: 0.9, lineJoin: 'round', lineCap: 'round'
+                color: '#1976d2',
+                weight: 4,
+                opacity: 0.9,
+                lineJoin: 'round',
+                lineCap: 'round'
             }).addTo(routeLayer);
         }
 
@@ -421,6 +498,7 @@
                 if (!data) return;
 
                 if (data.time) lastStateTime = data.time;
+
                 if (data.states && Array.isArray(data.states)) {
                     updateLiveMarkers(data.states);
                 }
@@ -443,16 +521,27 @@
 
             const id = state.id;
             activeIds.add(id);
+            const routeNumber = cleanName(state.route || state.name || '?');
 
             let marker = busMarkers[id];
 
             if (marker) {
                 marker.setLatLng([lat, lon]);
-                marker.setIcon(createBusIcon(state.course));
+                
+                // Плавное обновление стрелки и текста без пересоздания маркера
+                if (marker._icon) {
+                    const arrow = marker._icon.querySelector('.obj-dir');
+                    const span = marker._icon.querySelector('.obj-icon-b span');
+                    if (arrow) {
+                        const rotation = state.course ? Math.round(state.course) : 0;
+                        arrow.style.transform = `rotate(${rotation}deg)`;
+                    }
+                    if (span) span.textContent = routeNumber;
+                }
                 marker._busData = state;
             } else {
                 marker = L.marker([lat, lon], {
-                    icon: createBusIcon(state.course),
+                    icon: createBusIcon(state.course, routeNumber),
                     zIndexOffset: 1000
                 });
                 marker._busId = id;
@@ -471,23 +560,26 @@
         });
     }
 
-    // ─── Иконка автобуса (ровная) + маленькая стрелка (вращается) ───
-    function createBusIcon(course) {
+    // ─── Иконка автобуса (Flat design, SVG, белая обводка) ───
+    function createBusIcon(course, routeName) {
         const rotation = course ? Math.round(course) : 0;
         return L.divIcon({
-            className: 'leaflet-bus-marker',
+            className: 'custom-icon-transport',
             html: `
-                <div class="bus-marker-container">
-                    <div class="bus-arrow-wrap" style="transform: rotate(${rotation}deg);">
-                        <svg class="bus-arrow-svg" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
-                    </div>
-                    <div class="bus-circle">
-                        <svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
-                    </div>
+                <div class="obj-dir" style="transform: rotate(${rotation}deg);">
+                    <svg class="dir-arrow" viewBox="0 0 24 24">
+                        <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
+                    </svg>
+                </div>
+                <div class="obj-icon-b">
+                    <svg class="bus-icon-svg" viewBox="0 0 24 24">
+                        <path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
+                    </svg>
+                    <span>${routeName}</span>
                 </div>
             `,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16]
+            iconSize: [38, 38],
+            iconAnchor: [19, 19]
         });
     }
 
