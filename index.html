@@ -14,25 +14,27 @@
 
         /* ─── Иконка автобуса на карте ─── */
         .custom-icon-transport {
-            /* НИКАКИХ margin-left/top! Leaflet сам центрирует через iconAnchor */
-            transition: transform 2.5s linear; /* Плавное движение автобусов */
+            /* Убрана CSS-транзишн, чтобы не конфликтовать с requestAnimationFrame */
         }
 
-        /* Стрелка направления */
+        /* Стрелка направления (идеально центрирована) */
         .obj-dir {
             position: absolute;
-            top: -22px;
-            left: 50%;
-            margin-left: -10px; /* Центрируем стрелку 20px внутри контейнера */
-            width: 20px;
-            height: 20px;
+            top: 0; left: 0;
+            width: 36px; height: 36px;
+            transform-origin: 18px 18px; /* Центр круга */
+            transition: transform 0.3s ease;
             z-index: 1;
-            transition: transform 0.4s ease;
+            pointer-events: none;
         }
 
         .dir-arrow {
-            width: 100%;
-            height: 100%;
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            margin-left: -10px;
+            width: 20px;
+            height: 20px;
             stroke: #ffffff; 
             stroke-width: 2px;
             stroke-linejoin: round;
@@ -42,10 +44,8 @@
         /* Круг с автобусом или цифрой */
         .obj-icon-circle {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 36px;
-            height: 36px;
+            top: 0; left: 0;
+            width: 36px; height: 36px;
             border-radius: 50%;
             border: 2px solid #ffffff;
             box-shadow: 0 3px 6px rgba(0,0,0,0.3);
@@ -56,28 +56,21 @@
             overflow: hidden;
         }
 
-        /* Иконка автобуса (если выбран 1 маршрут) */
-        .bus-svg-icon {
-            width: 22px;
-            height: 22px;
-            fill: #ffffff;
-        }
-
-        /* Цифра маршрута (если выбрано несколько) */
+        .bus-svg-icon { width: 22px; height: 22px; fill: #ffffff; }
+        
         .obj-icon-circle span {
-            font-size: 14px;
-            color: #ffffff;
-            font-weight: 700;
-            font-family: 'Roboto', sans-serif;
-            line-height: 1;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-            letter-spacing: -0.5px;
+            font-size: 14px; color: #ffffff; font-weight: 700;
+            font-family: 'Roboto', sans-serif; line-height: 1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4); letter-spacing: -0.5px;
         }
 
         /* ─── Левая панель ─── */
-        .sidebar { position: absolute; top: 20px; left: 20px; width: 340px; max-height: calc(100vh - 40px); background: #ffffff; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; display: flex; flex-direction: column; overflow: hidden; }
+        .sidebar { position: absolute; top: 20px; left: 20px; width: 340px; max-height: calc(100vh - 40px); background: #ffffff; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 3000; display: flex; flex-direction: column; overflow: hidden; }
         .brand { background: #1976d2; color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
         .brand svg { width: 24px; height: 24px; fill: #fff; }
+        
+        #close-sidebar-btn { display: none; margin-left: auto; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; line-height: 1; }
+
         .route-btn-wrapper { padding: 16px; background: #fff; border-bottom: 1px solid #eee; }
         .route-btn { width: 100%; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 2px; padding: 12px 16px; font-size: 16px; font-weight: 500; color: #212121; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
         .route-btn:hover { background: #eeeeee; }
@@ -100,8 +93,9 @@
         .stops-list li.terminal { font-weight: 500; color: #1976d2; }
 
         /* ─── Правая панель ─── */
-        .bus-panel { position: absolute; top: 20px; right: 20px; width: 300px; max-height: calc(100vh - 40px); background: #ffffff; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        .bus-panel { position: absolute; top: 20px; right: 20px; width: 300px; max-height: calc(100vh - 40px); background: #ffffff; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 3000; display: none; flex-direction: column; overflow: hidden; }
         .bus-panel.active { display: flex; }
+        
         .bus-panel-header { background: #1976d2; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 500; }
         .bus-panel-header .close-bus { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; line-height: 1; }
         .bus-panel-body { padding: 16px; overflow-y: auto; max-height: calc(100vh - 120px); }
@@ -113,7 +107,7 @@
         .next-stops-list li .stop-time { color: #1976d2; font-weight: 500; }
 
         /* ─── Модальное окно выбора маршрута ─── */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 4000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .modal-box { background: #fff; width: 90%; max-width: 500px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .modal-overlay.active .modal-box { transform: translateY(0); }
@@ -130,6 +124,22 @@
         
         .modal-hint { padding: 0 16px 16px; font-size: 12px; color: #757575; text-align: center; }
 
+        /* ─── Плавающая кнопка мобильного меню ─── */
+        #mobile-menu-btn {
+            display: none;
+            position: absolute;
+            top: 50%; right: 20px;
+            transform: translateY(-50%);
+            width: 48px; height: 48px;
+            background: #fff;
+            border: none; border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        #mobile-menu-btn svg { fill: #1976d2; width: 24px; height: 24px; }
+
         /* ─── Leaflet Стили ─── */
         .leaflet-control-zoom a { background: #ffffff; color: #212121; border: none; border-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important; }
         .leaflet-control-zoom a:hover { background: #f5f5f5; }
@@ -137,21 +147,42 @@
 
         /* ─── Мобильная версия ─── */
         @media (max-width: 600px) {
-            .sidebar { top: auto; bottom: 0; left: 0; width: 100%; max-height: 50vh; border-radius: 8px 8px 0 0; }
-            .bus-panel { top: auto; bottom: 0; right: 0; width: 100%; max-height: 40vh; border-radius: 8px 8px 0 0; }
-            .stops-list { max-height: calc(50vh - 180px); }
-            .modal-grid { max-height: 40vh; }
+            #mobile-menu-btn { display: flex; }
+            #close-sidebar-btn { display: block; }
+            
+            .sidebar { 
+                position: fixed; top: 0; left: 0; width: 100%; height: 100vh; max-height: 100vh; 
+                transform: translateX(-100%); transition: transform 0.3s ease; z-index: 3000;
+                border-radius: 0;
+                display: flex;
+            }
+            .sidebar.active { transform: translateX(0); }
+            
+            .bus-panel { 
+                position: fixed; top: 0; left: 0; width: 100%; height: 100vh; max-height: 100vh; 
+                transform: translateX(100%); transition: transform 0.3s ease; z-index: 3000;
+                border-radius: 0;
+            }
+            .bus-panel.active { transform: translateX(0); }
+            
+            .stops-list { max-height: calc(100vh - 180px); }
         }
     </style>
 </head>
 <body>
 <div id="map"></div>
 
+<!-- Кнопка открытия меню на мобильных -->
+<button id="mobile-menu-btn" onclick="openSidebar()">
+    <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+</button>
+
 <!-- Левая панель -->
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
     <div class="brand">
         <svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
         PBuses
+        <button id="close-sidebar-btn" onclick="closeSidebar()">&times;</button>
     </div>
     <div class="route-btn-wrapper">
         <button class="route-btn" id="openModalBtn">
@@ -172,7 +203,7 @@
 
 <!-- Правая панель инфо -->
 <div class="bus-panel" id="busPanel">
-    <div class="bus-panel-header">
+    <div class="bus-panel-header" id="busPanelHeader">
         <span id="busPanelTitle">Автобус</span>
         <button class="close-bus" id="closeBusPanel">&times;</button>
     </div>
@@ -207,7 +238,6 @@
         'https://corsproxy.io/?'
     ];
 
-    // Палитра цветов для маршрутов
     const COLORS = ['#1976d2', '#f57c00', '#d32f2f', '#7b1fa2', '#c2185b', '#212121'];
 
     const $ = id => document.getElementById(id);
@@ -222,6 +252,7 @@
     const routeDirEl = $('routeDirection');
     const stopListEl = $('stopList');
     const busPanel = $('busPanel');
+    const busPanelHeader = $('busPanelHeader');
     const busPanelTitle = $('busPanelTitle');
     const busPanelBody = $('busPanelBody');
     const closeBusPanel = $('closeBusPanel');
@@ -238,6 +269,11 @@
     let busMarkers = {}; 
     let liveLayer = L.featureGroup().addTo(map);
     let liveInterval = null;
+    let animationFrames = {};
+
+    // Глобальные функции для управления мобильной панелью
+    window.openSidebar = function() { document.getElementById('sidebar').classList.add('active'); };
+    window.closeSidebar = function() { document.getElementById('sidebar').classList.remove('active'); };
 
     function cleanName(name) {
         return String(name).replace(/^0+/, '') || '0';
@@ -464,7 +500,7 @@
         if (bounds.isValid()) {
             const isMobile = window.innerWidth <= 600;
             const padding = isMobile
-                ? { paddingTopLeft: [40, 40], paddingBottomRight: [40, 280] }
+                ? { paddingTopLeft: [20, 20], paddingBottomRight: [20, 80] }
                 : { paddingTopLeft: [380, 40], paddingBottomRight: [40, 40] };
             map.fitBounds(bounds, padding);
         }
@@ -472,14 +508,13 @@
         startLiveTracking();
     }
 
-    // ─── Live-трекинг (БЕЗ last-state-time для прокси) ───
+    // ─── Live-трекинг (с плавной интерполяцией по дорогам) ───
     function startLiveTracking() {
         if (liveInterval) clearInterval(liveInterval);
         if (selectedRoutes.length === 0) return;
 
         async function poll() {
             try {
-                // Запрашиваем ВСЕ автобусы города (без кастомных заголовков)
                 const data = await apiGet('/inforoutestates', { vt: 'b', srv: 'pav' });
                 if (!data || !data.states) return;
 
@@ -498,15 +533,32 @@
                     activeIds.add(id);
                     const routeNumber = cleanName(state.route || state.name || '?');
 
+                    // Извлекаем путь (prevWays) для плавной езды по дорогам
+                    const flatPath = [];
+                    if (state.prevWays && Array.isArray(state.prevWays)) {
+                        state.prevWays.forEach(segment => {
+                            segment.forEach(pt => {
+                                const pLat = pt.lat !== undefined ? pt.lat : pt[0];
+                                const pLon = pt.lng !== undefined ? pt.lng : pt[1];
+                                if (isFinite(pLat) && isFinite(pLon)) {
+                                    flatPath.push(L.latLng(pLat, pLon));
+                                }
+                            });
+                        });
+                    }
+                    flatPath.push(L.latLng(lat, lon)); // Конечная точка
+
                     let marker = busMarkers[id];
 
                     if (marker) {
-                        // Обновляем позицию (CSS transition сделает её плавной)
-                        marker.setLatLng([lat, lon]);
-                        
-                        // Всегда обновляем иконку, чтобы текст/цвет были актуальны
                         marker.setIcon(createBusIcon(state.course, routeNumber, selectedItem.color, isSingle));
                         marker._busData = state;
+                        
+                        if (flatPath.length > 1) {
+                            slideMarker(marker, flatPath, 2500); // 2.5 сек анимация
+                        } else {
+                            marker.setLatLng([lat, lon]);
+                        }
                     } else {
                         marker = L.marker([lat, lon], {
                             icon: createBusIcon(state.course, routeNumber, selectedItem.color, isSingle),
@@ -524,6 +576,7 @@
                     if (!activeIds.has(id)) {
                         liveLayer.removeLayer(busMarkers[id]);
                         delete busMarkers[id];
+                        if (animationFrames[id]) cancelAnimationFrame(animationFrames[id]);
                     }
                 });
 
@@ -541,7 +594,68 @@
         Object.keys(busMarkers).forEach(id => {
             liveLayer.removeLayer(busMarkers[id]);
             delete busMarkers[id];
+            if (animationFrames[id]) cancelAnimationFrame(animationFrames[id]);
         });
+    }
+
+    // ─── Функция плавного полета по маршруту ───
+    function slideMarker(marker, path, duration) {
+        const id = marker._busId;
+        if (animationFrames[id]) cancelAnimationFrame(animationFrames[id]);
+
+        if (!path || path.length < 2) return;
+
+        const startTime = performance.now();
+        let totalDistance = 0;
+        const distances = [0];
+        
+        for (let i = 0; i < path.length - 1; i++) {
+            totalDistance += path[i].distanceTo(path[i+1]);
+            distances.push(totalDistance);
+        }
+
+        if (totalDistance === 0) return;
+
+        function step(time) {
+            const elapsed = time - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const targetDist = progress * totalDistance;
+
+            let i = 0;
+            while (i < distances.length - 1 && distances[i+1] < targetDist) {
+                i++;
+            }
+            if (i >= distances.length - 1) {
+                marker.setLatLng(path[path.length - 1]);
+                return;
+            }
+
+            const segDist = distances[i+1] - distances[i];
+            const segProgress = segDist === 0 ? 0 : (targetDist - distances[i]) / segDist;
+            
+            const p1 = path[i];
+            const p2 = path[i+1];
+            const currentLat = p1.lat + (p2.lat - p1.lat) * segProgress;
+            const currentLng = p1.lng + (p2.lng - p1.lng) * segProgress;
+            
+            marker.setLatLng([currentLat, currentLng]);
+
+            if (marker._icon) {
+                const arrow = marker._icon.querySelector('.obj-dir');
+                if (arrow) {
+                    const dy = p2.lat - p1.lat;
+                    const dx = p2.lng - p1.lng;
+                    const angle = Math.atan2(dx, dy) * 180 / Math.PI;
+                    arrow.style.transform = `rotate(${angle}deg)`;
+                }
+            }
+
+            if (progress < 1) {
+                animationFrames[id] = requestAnimationFrame(step);
+            }
+        }
+
+        animationFrames[id] = requestAnimationFrame(step);
     }
 
     // ─── Иконка автобуса ───
@@ -565,13 +679,23 @@
                 </div>
             `,
             iconSize: [36, 36],
-            iconAnchor: [18, 18] // Центрируем круг на координате
+            iconAnchor: [18, 18]
         });
     }
 
     // ─── Информация об автобусе ───
     async function showBusInfo(state) {
+        const match = selectedRoutes.find(r => r.route.name === state.route);
+        const color = match ? match.color : '#1976d2';
+        
+        busPanelHeader.style.backgroundColor = color; // Динамический акцент
         busPanel.classList.add('active');
+        
+        // На мобильных скрываем левую панель
+        if (window.innerWidth <= 600) {
+            document.getElementById('sidebar').classList.remove('active');
+        }
+        
         busPanelTitle.textContent = 'Автобус ' + cleanName(state.route || state.name || '?');
         busPanelBody.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">Загрузка...</div>';
 
