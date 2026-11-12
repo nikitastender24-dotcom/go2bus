@@ -274,42 +274,44 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 }
 
 
-/* PBuses · Material Design 1.0 · действия и жалобы */
-.material-icons { font-family:'Material Icons';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';font-feature-settings:'liga';-webkit-font-smoothing:antialiased; }
-.md-icon-button { width:40px;height:40px;border:0;background:transparent;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:inherit;cursor:pointer; }
-.md-icon-button:hover { background:rgba(0,0,0,.08) }
-.md-icon-button:focus-visible,.md-raised:focus-visible,.md-flat:focus-visible {outline:2px solid #ff4081;outline-offset:2px}
-.md-raised {height:36px;padding:0 16px;border:0;border-radius:2px;background:#1976d2;color:white;box-shadow:var(--md-e1);font:500 14px Roboto,Arial,sans-serif;text-transform:uppercase;letter-spacing:.3px;display:inline-flex;gap:8px;align-items:center;justify-content:center;cursor:pointer;}
-.md-raised:hover {background:#1565c0;box-shadow:var(--md-e2)}.md-raised:disabled {opacity:.45;cursor:default}
-.md-flat {height:36px;padding:0 12px;border:0;background:transparent;color:#1976d2;text-transform:uppercase;font:500 14px Roboto,Arial,sans-serif;cursor:pointer;border-radius:2px}
-.md-flat:hover {background:#e3f2fd}
-.bus-report-action {margin-top:16px;padding-top:16px;border-top:1px solid var(--md-divider);display:flex;align-items:center;gap:8px}
-.bus-report-note {font-size:12px;color:#757575;margin-top:8px;line-height:18px}
-#myLocationButton {position:absolute;right:10px;top:100px;z-index:900;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:white;color:#616161;box-shadow:var(--md-e2);border:0;border-radius:2px;cursor:pointer}
-#myLocationButton:hover {background:#f5f5f5}#myLocationButton:disabled {opacity:.55;cursor:wait}
-#myLocationButton .material-icons{font-size:24px}
-.user-location-dot{width:16px;height:16px;border:3px solid white;border-radius:50%;background:#2196f3;box-shadow:0 0 0 1px #1976d2,0 1px 5px rgba(0,0,0,.24)}
-#reportDialog .modal-box{max-width:440px}#reportDialog .modal-head{align-items:center}
-.report-form{padding:0 24px 20px;display:flex;flex-direction:column;gap:16px}
-.report-plate{font-size:14px;color:#757575}.report-plate strong{display:block;margin-top:5px;font-size:20px;color:#212121;font-weight:500;letter-spacing:.4px}
-.md-field {display:flex;flex-direction:column;gap:6px;font-size:12px;color:#757575}
-.md-field select,.md-field textarea {width:100%;font:400 14px Roboto,Arial,sans-serif;color:#212121;background:#fafafa;border:0;border-bottom:2px solid #bdbdbd;border-radius:0;outline:0;padding:12px 8px;resize:vertical;min-height:42px}
-.md-field textarea{min-height:84px}.md-field select:focus,.md-field textarea:focus{border-bottom-color:#1976d2;background:#f5f5f5}
-.report-actions{display:flex;justify-content:flex-end;gap:8px;align-items:center}
-.report-status{min-height:18px;font-size:13px;line-height:19px;color:#d32f2f}.report-status.success{color:#2e7d32}
-.report-disclaimer{font-size:12px;line-height:18px;color:#757575}
+/* Material Design 1.0 — системные векторные иконки */
+.material-icons {font-family:'Material Icons';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:'liga';font-feature-settings:'liga';-webkit-font-smoothing:antialiased;}
+#myLocationButton {position:absolute;right:12px;top:104px;z-index:1200;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:white;color:#616161;box-shadow:var(--md-e2);border:0;border-radius:2px;cursor:pointer;}
+#myLocationButton:hover {background:#f5f5f5}
+#myLocationButton:disabled {opacity:.55;cursor:wait}
+#myLocationButton .material-icons {font-size:24px}
+.user-location-dot {width:16px;height:16px;border:3px solid white;border-radius:50%;background:#2196f3;box-shadow:0 0 0 1px #1976d2,0 1px 5px rgba(0,0,0,.24)}
 
-@media(max-width:600px){#myLocationButton{top:16px;right:16px}#reportDialog .modal-box{max-width:calc(100vw - 32px)}}
-
-
-/* Google Material Design 1.0 · report action and single-choice menu */
-.md-report-button{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 16px;border:0;border-radius:2px;background:#fff;color:#d32f2f;box-shadow:0 2px 5px rgba(0,0,0,.26);font:500 14px Roboto,Arial,sans-serif;text-transform:uppercase;letter-spacing:.1px;cursor:pointer;transition:box-shadow .2s,background .2s}
-.md-report-button .material-icons{font-size:18px}.md-report-button:hover{background:#fafafa;box-shadow:0 4px 8px rgba(0,0,0,.24)}.md-report-button:active{background:#f5f5f5;box-shadow:0 6px 12px rgba(0,0,0,.22)}
-.md-report-button:focus-visible,.md-reason-trigger:focus-visible,.md-reason-menu button:focus-visible{outline:2px solid #1976d2;outline-offset:2px}
-.md-reason-field{position:relative;min-width:0}.md-reason-label{display:block;font-size:12px;color:#757575;margin-bottom:6px}.md-reason-trigger{width:100%;height:48px;border:0;border-bottom:1px solid #9e9e9e;border-radius:0;background:transparent;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:0 4px;color:#212121;font:400 16px Roboto,Arial,sans-serif;cursor:pointer}.md-reason-trigger[aria-expanded="true"]{border-bottom:2px solid #1976d2}.md-reason-trigger .material-icons{color:#757575}
-.md-reason-menu{position:absolute;z-index:2500;left:0;right:0;top:26px;background:#fff;box-shadow:0 8px 17px rgba(0,0,0,.2),0 3px 14px rgba(0,0,0,.12);border-radius:2px;padding:8px 0;max-height:260px;overflow-y:auto}.md-reason-menu[hidden]{display:none}.md-reason-menu button{display:block;width:100%;min-height:48px;text-align:left;border:0;background:#fff;padding:0 16px;font:400 16px Roboto,Arial,sans-serif;color:#212121;cursor:pointer}.md-reason-menu button:hover,.md-reason-menu button[aria-selected="true"]{background:#eee}
-#reportDialog .report-actions .md-flat{min-width:88px;padding:0 8px}#submitReport:disabled{opacity:.38;cursor:default}
-.md-ripple{position:absolute;border-radius:50%;background:rgba(0,0,0,.12);transform:scale(0);animation:mdRipple .5s ease-out;pointer-events:none}@keyframes mdRipple{to{transform:scale(1);opacity:0}}
+/* PBuses mobile map: компактная стрелка без FAB и без розового фона */
+#mobile-menu-btn {
+    width:44px; height:48px; right:2px; top:50%;
+    padding:0; background:transparent; border:0; border-radius:0;
+    box-shadow:none; color:#1976d2;
+    transform:translateY(-50%); z-index:1200;
+    -webkit-tap-highlight-color:transparent;
+}
+#mobile-menu-btn .material-icons {
+    font-size:32px; line-height:1; color:#1976d2;
+    text-shadow:0 1px 2px rgba(255,255,255,.95), 0 0 4px white;
+}
+#mobile-menu-btn:hover, #mobile-menu-btn:active, #mobile-menu-btn:focus {
+    background:transparent; box-shadow:none;
+}
+#mobile-menu-btn:focus-visible {outline:2px solid #1976d2;outline-offset:-3px}
+/* Не перекрываем масштабирование кнопкой геопозиции */
+#myLocationButton {top:104px;right:12px;}
+@media(max-width:600px) {
+    #mobile-menu-btn {display:flex;align-items:center;justify-content:center;}
+    #myLocationButton {top:104px;right:12px;}
+    .leaflet-top.leaflet-right {top:8px;right:2px;}
+}
+/* Состояние загрузки маршрутов / повторная попытка */
+.route-load-state {padding:12px 20px;color:#757575;font-size:13px;line-height:20px;}
+.route-load-state.error {color:#b71c1c;}
+.route-retry {display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:8px 12px;
+    border:0;border-radius:2px;background:#e3f2fd;color:#1565c0;font:500 13px Roboto,Arial,sans-serif;
+    cursor:pointer;}
+.route-retry .material-icons {font-size:18px;}
 
     </style>
 </head>
@@ -317,8 +319,8 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 <div id="map"></div>
 
 <!-- Кнопка открытия меню на мобильных -->
-<button id="mobile-menu-btn" onclick="openSidebar()" aria-label="Открыть маршруты">
-    <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+<button id="mobile-menu-btn" type="button" onclick="openSidebar()" aria-label="Открыть маршруты" title="Маршруты">
+    <span class="material-icons" aria-hidden="true">chevron_right</span>
 </button>
 
 <!-- Левая панель -->
@@ -380,34 +382,19 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 
 <!-- Material Design 1.0: геопозиция -->
 <button id="myLocationButton" type="button" title="Моё местоположение" aria-label="Показать моё местоположение"><span class="material-icons" aria-hidden="true">my_location</span></button>
-<!-- Жалоба только по государственному регистрационному номеру -->
-<div class="modal-overlay" id="reportDialog" role="dialog" aria-modal="true" aria-labelledby="reportDialogTitle">
-  <div class="modal-box">
-    <div class="modal-head"><h3 id="reportDialogTitle">Жалоба на автобус</h3><button id="closeReportDialog" class="md-icon-button" type="button" aria-label="Закрыть"><span class="material-icons">close</span></button></div>
-    <form id="reportForm" class="report-form" autocomplete="off">
-      <div class="report-plate">Госномер автобуса<strong id="reportPlateText"></strong></div>
-      <div class="md-reason-field"><span class="md-reason-label">Причина</span><button type="button" id="reasonTrigger" class="md-reason-trigger" aria-haspopup="listbox" aria-expanded="false"><span id="reasonSelected">Выберите причину</span><span class="material-icons">arrow_drop_down</span></button><div id="reasonMenu" class="md-reason-menu" role="listbox" hidden><button type="button" role="option" data-reason="driving">Опасное вождение</button><button type="button" role="option" data-reason="schedule">Нарушение расписания</button><button type="button" role="option" data-reason="behavior">Поведение водителя</button><button type="button" role="option" data-reason="condition">Состояние автобуса</button><button type="button" role="option" data-reason="other">Другое</button></div><input type="hidden" id="reportReason" value=""></div>
-      <label class="md-field">Описание (необязательно)<textarea id="reportDescription" maxlength="400" placeholder="Что произошло?" rows="3"></textarea></label>
-      <p class="report-disclaimer">Жалоба отправляется администратору сайта. Не указывайте личные данные.</p>
-      <div id="reportStatus" class="report-status" role="status" aria-live="polite"></div>
-      <div class="report-actions"><button class="md-flat" id="cancelReport" type="button">Отмена</button><button class="md-flat" id="submitReport" type="submit">Отправить</button></div>
-    </form>
-  </div>
-</div>
-
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function () {
     'use strict';
 
     const API_BASE = 'http://go2.bus-pvl.kz';
+    // На Vercel используется собственная функция /api/transit (без CORS-прокси).
+    // Если HTML открыт отдельно, остаётся резервный путь через публичные прокси.
     const PROXIES = [
-        'https://proxy.cors.dev/',
-        'https://cors.x2u.in/',
         'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?',
         'https://api.codetabs.com/v1/proxy?quest=',
-        'https://corsproxy.io/?'
+        'https://proxy.cors.dev/'
     ];
 
     const COLORS = ['#1976d2', '#f57c00', '#d32f2f', '#7b1fa2', '#c2185b', '#212121'];
@@ -434,11 +421,24 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
     const stopPanelBody = $('stopPanelBody');
     const closeStopPanel = $('closeStopPanel');
 
-    const map = L.map('map', { zoomControl: false }).setView([52.287, 76.967], 12);
-    L.control.zoom({ position: 'topright' }).addTo(map);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const map = L.map('map', {
+        zoomControl: false,
+        zoomSnap: 0.5,
+        zoomDelta: 0.5,
         maxZoom: 19,
-        attribution: '© OSM'
+        preferCanvas: true
+    }).setView([52.287, 76.967], 12);
+    L.control.zoom({ position: 'topright' }).addTo(map);
+    // На HiDPI / Retina Leaflet запрашивает OSM-тайлы на один уровень детальнее.
+    // На обычных экранах остаются стандартные тайлы. OSM сохраняет атрибуцию.
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        minZoom: 3,
+        maxZoom: 20,
+        maxNativeZoom: 19,
+        detectRetina: true,
+        updateWhenZooming: false,
+        keepBuffer: 3,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     let routes = []; 
@@ -460,35 +460,69 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         return String(name).replace(/^0+/, '') || '0';
     }
 
-    async function apiGet(path, params) {
-        const url = new URL(API_BASE + path);
-        if (params) {
-            Object.keys(params).forEach(k => {
-                if (params[k] != null) url.searchParams.set(k, params[k]);
-            });
-        }
-        const target = url.toString();
-        let lastErr = null;
-
-        for (const proxy of PROXIES) {
-            try {
-                const proxyUrl = proxy + target;
-                const res = await fetch(proxyUrl, { cache: 'no-store' });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                return await res.json();
-            } catch (e) {
-                lastErr = e;
-                console.warn('[Proxy failed]', proxy, e.message);
+    const API_PATHS = new Set(['/inforoutes','/inforoutedetails','/inforoutestates','/infonextstops']);
+    const inFlightRequests = new Map();
+    function isValidApiResponse(path, data) {
+        if (!data || typeof data !== 'object') return false;
+        if (path === '/inforoutes') return Array.isArray(data) || Array.isArray(data.routes);
+        if (path === '/inforoutestates') return Array.isArray(data.states);
+        if (path === '/inforoutedetails') return Array.isArray(data.directions);
+        if (path === '/infonextstops') return Array.isArray(data.nextStops);
+        return false;
+    }
+    async function requestJSON(url, timeoutMs = 8000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const response = await fetch(url, {cache:'no-store',signal:controller.signal,headers:{'Accept':'application/json'}});
+            if (!response.ok) throw new Error('HTTP '+response.status);
+            return await response.json();
+        } finally { clearTimeout(timer); }
+    }
+    async function apiGet(path, params = {}) {
+        if (!API_PATHS.has(path)) throw new Error('Недопустимый API endpoint');
+        const query = new URLSearchParams();
+        Object.entries(params).forEach(([key,value]) => {if(value != null) query.set(key,String(value));});
+        const queryString = query.toString();
+        const key = path+'?'+queryString;
+        if (inFlightRequests.has(key)) return inFlightRequests.get(key);
+        const promise = (async () => {
+            let lastError = null;
+            // На Vercel этот endpoint доступен автоматически через api/transit.js.
+            if (location.protocol !== 'file:') {
+                try {
+                    const result = await requestJSON('/api/transit?endpoint='+encodeURIComponent(path)+'&'+queryString,8500);
+                    if (isValidApiResponse(path,result)) return result;
+                    throw new Error('Некорректный ответ API');
+                } catch (error) { lastError=error; console.warn('[Vercel transit]',path,error.message); }
             }
-        }
-        throw lastErr || new Error('All proxies failed');
+            const target = new URL(API_BASE+path);
+            query.forEach((value,key) => target.searchParams.set(key,value));
+            const encoded = encodeURIComponent(target.toString());
+            // Резервные публичные прокси проверяются параллельно, а не последовательно.
+            const urls = PROXIES.map(prefix => prefix+ (prefix.includes('cors.dev/') ? target.toString() : encoded));
+            try {
+                return await Promise.any(urls.map(async url => {
+                    const data = await requestJSON(url,6500);
+                    if (!isValidApiResponse(path,data)) throw new Error('Некорректный формат JSON');
+                    return data;
+                }));
+            } catch (error) {
+                throw lastError || new Error('Не удалось получить данные транспорта');
+            }
+        })();
+        inFlightRequests.set(key,promise);
+        try {return await promise;}
+        finally {inFlightRequests.delete(key);}
     }
 
     // ─── Загрузка всех маршрутов ───
     async function loadRoutes() {
+        modalGrid.innerHTML = '<div class="route-load-state">Загрузка маршрутов…</div>';
         try {
             const data = await apiGet('/inforoutes', { vt: 'b', srv: 'pav' });
-            routes = Array.isArray(data) ? data.filter(r => r && r.vt === 'b' && r.name) : [];
+            const allRoutes = Array.isArray(data) ? data : (Array.isArray(data.routes) ? data.routes : []);
+            routes = allRoutes.filter(r => r && String(r.vt).toLowerCase() === 'b' && r.name != null && String(r.name).trim());
             routes.sort((a, b) => {
                 const na = parseInt(cleanName(a.name), 10);
                 const nb = parseInt(cleanName(b.name), 10);
@@ -506,10 +540,12 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
                 modalGrid.appendChild(btn);
             });
             
+            if (!routes.length) throw new Error('Список маршрутов пуст');
             updateModalUI();
         } catch (e) {
             console.error(e);
-            alert('Ошибка загрузки маршрутов.');
+            modalGrid.innerHTML = '<div class="route-load-state error">Не удалось загрузить маршруты.<br><button type="button" class="route-retry" id="retryAllRoutes"><span class="material-icons">refresh</span>Повторить</button></div>';
+            $('retryAllRoutes').onclick = loadRoutes;
         }
     }
 
@@ -525,7 +561,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
             if (selectedRoutes.length >= 6) return; 
             
             const route = routes[index];
-            const color = COLORS[selectedRoutes.length];
+            const color = COLORS.find(c => !selectedRoutes.some(r => r.color === c)) || COLORS[0];
             
             selectedRoutes.push({
                 index: index,
@@ -621,22 +657,33 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 
         const bounds = L.latLngBounds();
         const activeRoutes = [...selectedRoutes];
-        const today = new Date();
-        const p = n => String(n).padStart(2, '0');
-        const dateStr = `${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}`;
+        // Дата именно Павлодара, а не часового пояса устройства пользователя.
+        const dateParts = new Intl.DateTimeFormat('en-GB', {
+            timeZone:'Asia/Almaty',year:'numeric',month:'2-digit',day:'2-digit'
+        }).formatToParts(new Date());
+        const part = type => dateParts.find(x => x.type === type)?.value || '';
+        const dateStr = `${part('year')}-${part('month')}-${part('day')}`;
 
-        // Загружаем параллельно, но отображаем строго в порядке выбора
+        // Повторное открытие выбранного маршрута не создаёт параллельные дубликаты запросов.
         await Promise.all(activeRoutes.map(async item => {
             if (item.directions && item.directions.length) return;
-            try {
-                const data = await apiGet('/inforoutedetails', {
-                    route:item.route.name, vt:item.route.vt, date:dateStr,
-                    srv:'pav', lang:'ru', timezone:'Asia/Almaty'
-                });
-                item.directions = (data && Array.isArray(data.directions)) ? data.directions : [];
-            } catch (e) {
-                console.warn('Failed to load route details', item.route.name, e);
-                item.directions = [];
+            item.loadError = null;
+            const baseParams = {route:item.route.name,vt:item.route.vt,srv:'pav',lang:'ru',timezone:'Asia/Almaty'};
+            let dirs = [];
+            let lastError = null;
+            // Если API отклонил дату или вернул пустой маршрут,
+            // повторяем запрос без фильтра даты.
+            for (const options of [{...baseParams,date:dateStr},baseParams]) {
+                try {
+                    const data = await apiGet('/inforoutedetails',options);
+                    dirs = data.directions || [];
+                    if (dirs.length) break;
+                } catch (e) {lastError = e;}
+            }
+            item.directions = dirs;
+            if (!dirs.length) {
+                item.loadError = lastError ? 'Не удалось загрузить остановки' : 'Нет данных об остановках';
+                if (lastError) console.warn('[Route details]',item.route.name,lastError);
             }
         }));
         if (currentVersion !== routeRenderVersion) return;
@@ -653,13 +700,22 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
             badge.textContent = cleanName(item.route.name);
             const direction = document.createElement('span');
             direction.className = 'route-stop-direction';
-            direction.textContent = dir ? [dir.begName, dir.endName].filter(Boolean).join(' → ') : 'Остановки недоступны';
+            direction.textContent = dir ? [dir.begName, dir.endName].filter(Boolean).join(' → ') : (item.loadError || 'Остановки недоступны');
             heading.append(badge, direction);
             section.appendChild(heading);
             const ul = document.createElement('ul');
             section.appendChild(ul);
             stopListEl.appendChild(section);
-            if (!dir) return;
+            if (!dir) {
+                const retry = document.createElement('button');
+                retry.type = 'button';
+                retry.className = 'route-retry';
+                retry.innerHTML = '<span class="material-icons" aria-hidden="true">refresh</span>Повторить загрузку';
+                retry.style.margin = '8px 16px 16px';
+                retry.onclick = () => {item.directions=[];redrawAllRoutes();};
+                section.appendChild(retry);
+                return;
+            }
 
             let hasCorridors = false;
             if (Array.isArray(dir.corridors)) {
@@ -770,7 +826,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
                 const activeIds = new Set();
                 const isSingle = selectedRoutes.length === 1;
                 data.states.forEach(state => {
-                    const item = selectedRoutes.find(r => r.route.name === state.route);
+                    const item = selectedRoutes.find(r => cleanName(r.route.name) === cleanName(state.route));
                     if (!item) return;
                     const lat = Number(state.lat), lon = Number(state.lon);
                     if (!Number.isFinite(lat) || !Number.isFinite(lon) || !lat || !lon) return;
@@ -851,7 +907,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 
     // ─── Информация об автобусе ───
     async function showBusInfo(state) {
-        const match = selectedRoutes.find(r => r.route.name === state.route);
+        const match = selectedRoutes.find(r => cleanName(r.route.name) === cleanName(state.route));
         const color = match ? match.color : '#1976d2';
         
         busPanelHeader.style.backgroundColor = color; // Динамический акцент
@@ -889,21 +945,14 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
                 html += '<div style="color:#999;font-size:13px;margin-top:12px;">Нет данных о следующих остановках</div>';
             }
 
-            if (state.stateNum && String(state.stateNum).trim()) {
-                html += `<div class="bus-report-action"><button type="button" id="busReportButton" class="md-report-button"><span class="material-icons" aria-hidden="true">report_problem</span>Пожаловаться</button></div><div class="bus-report-note">Жалоба привязывается только к госномеру автобуса.</div>`;
-            }
             busPanelBody.innerHTML = html;
-            const reportButton = $('busReportButton');
-            if (reportButton) reportButton.addEventListener('click', () => openReportDialog(String(state.stateNum)));
         } catch (e) {
             console.error(e);
             let fallback = '<div style="color:#757575;padding:12px 0">Не удалось загрузить следующие остановки.</div>';
-            if (state.stateNum && String(state.stateNum).trim()) {
-                fallback += `<div class="bus-info-row"><strong>Госномер:</strong> ${escapeHTML(state.stateNum)}</div><div class="bus-report-action"><button id="busReportButton" type="button" class="md-report-button"><span class="material-icons" aria-hidden="true">report_problem</span>Пожаловаться</button></div>`;
-            }
+            if (state.model) fallback += `<div class="bus-info-row"><strong>Модель:</strong> ${escapeHTML(state.model)}</div>`;
+            if (state.garageNum) fallback += `<div class="bus-info-row"><strong>Гаражный:</strong> ${escapeHTML(state.garageNum)}</div>`;
+            if (state.stateNum) fallback += `<div class="bus-info-row"><strong>Госномер:</strong> ${escapeHTML(state.stateNum)}</div>`;
             busPanelBody.innerHTML = fallback;
-            const reportButton = $('busReportButton');
-            if (reportButton) reportButton.addEventListener('click', () => openReportDialog(String(state.stateNum)));
         }
     }
 
@@ -953,85 +1002,6 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
             const message = error.code === 1 ? 'Доступ к геопозиции запрещён.' : error.code === 3 ? 'Истекло время ожидания геопозиции.' : 'Не удалось определить геопозицию.';
             alert(message+' Для работы нужен HTTPS или localhost.');
         }, {enableHighAccuracy:true,timeout:12000,maximumAge:10000});
-    });
-
-    // Жалобы: браузер отправляет только госномер и причину на Vercel API.
-    const reportDialog = $('reportDialog');
-    const reportForm = $('reportForm');
-    const reportStatus = $('reportStatus');
-    const reasonTrigger = $('reasonTrigger');
-    const reasonMenu = $('reasonMenu');
-    let reportPlate = '';
-    const normalizePlate = value => String(value || '').normalize('NFKC').toUpperCase().replace(/[\s-]+/g, '').trim();
-    const showReportStatus = (message, success = false) => {
-        reportStatus.textContent = message;
-        reportStatus.classList.toggle('success', success);
-    };
-    function toggleReasonMenu(open) {
-        reasonMenu.hidden = !open;
-        reasonTrigger.setAttribute('aria-expanded', String(open));
-    }
-    reasonTrigger.addEventListener('click', () => toggleReasonMenu(reasonMenu.hidden));
-    reasonMenu.querySelectorAll('[data-reason]').forEach(option => option.addEventListener('click', () => {
-        $('reportReason').value = option.dataset.reason;
-        $('reasonSelected').textContent = option.textContent;
-        reasonMenu.querySelectorAll('[data-reason]').forEach(item => item.setAttribute('aria-selected', String(item === option)));
-        toggleReasonMenu(false);
-    }));
-    document.addEventListener('click', e => { if (!e.target.closest('.md-reason-field')) toggleReasonMenu(false); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleReasonMenu(false); if (reportDialog.classList.contains('active')) closeReportDialog(); } });
-    document.addEventListener('pointerdown', e => {
-        const button = e.target.closest('.md-report-button');
-        if (!button) return;
-        const r = button.getBoundingClientRect(), diameter = Math.max(r.width,r.height)*2;
-        const ripple = document.createElement('span'); ripple.className = 'md-ripple';
-        ripple.style.width = ripple.style.height = diameter+'px';
-        ripple.style.left = (e.clientX-r.left-diameter/2)+'px'; ripple.style.top = (e.clientY-r.top-diameter/2)+'px';
-        button.appendChild(ripple); ripple.addEventListener('animationend', () => ripple.remove());
-    });
-    function openReportDialog(plate) {
-        reportPlate = normalizePlate(plate);
-        if (!reportPlate) return;
-        reportForm.reset();
-        $('reportReason').value = '';
-        $('reasonSelected').textContent = 'Выберите причину';
-        toggleReasonMenu(false);
-        reportForm.querySelectorAll('textarea').forEach(field => field.disabled = false);
-        $('submitReport').disabled = false;
-        $('reportPlateText').textContent = plate;
-        showReportStatus('');
-        reportDialog.classList.add('active');
-    }
-    function closeReportDialog() {
-        reportDialog.classList.remove('active');
-        reportPlate = '';
-        toggleReasonMenu(false);
-    }
-    $('closeReportDialog').addEventListener('click', closeReportDialog);
-    $('cancelReport').addEventListener('click', closeReportDialog);
-    reportDialog.addEventListener('click', e => { if (e.target === reportDialog) closeReportDialog(); });
-    reportForm.addEventListener('submit', async e => {
-        e.preventDefault();
-        const reason = $('reportReason').value;
-        if (!reportPlate || !['driving','schedule','behavior','condition','other'].includes(reason)) {
-            showReportStatus('Выберите причину жалобы.'); return;
-        }
-        const button = $('submitReport');
-        button.disabled = true;
-        showReportStatus('Отправка…');
-        try {
-            const response = await fetch('/api/report', {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({plate:reportPlate,reason,description:$('reportDescription').value.trim().slice(0,400)})
-            });
-            const result = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(result.error || 'Ошибка сервера');
-            showReportStatus('Жалоба отправлена.', true);
-            reportForm.querySelectorAll('textarea').forEach(field => field.disabled = true);
-        } catch (error) {
-            showReportStatus(error.message || 'Не удалось отправить жалобу.');
-            button.disabled = false;
-        }
     });
 
     loadRoutes();
