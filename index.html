@@ -313,6 +313,18 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
     cursor:pointer;}
 .route-retry .material-icons {font-size:18px;}
 
+
+/* Material Design 1.0 — массовый выбор маршрутов */
+.route-select-actions {display:flex;flex-wrap:wrap;gap:8px;padding:4px 16px 8px 16px;align-items:center;border-bottom:1px solid rgba(0,0,0,.12)}
+.route-select-action {height:36px;min-width:64px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:2px;background:transparent;color:#1976d2;font:500 14px Roboto,Arial,sans-serif;text-transform:uppercase;cursor:pointer;transition:background .15s;white-space:nowrap}
+.route-select-action:hover {background:rgba(25,118,210,.08)}
+.route-select-action:active {background:rgba(25,118,210,.16)}
+.route-select-action:disabled {opacity:.38;cursor:default;background:transparent}
+.route-select-action .material-icons {font-size:19px}
+.route-select-action:focus-visible {outline:2px solid #1976d2;outline-offset:1px}
+.grid-btn:focus-visible {outline:2px solid #1976d2;outline-offset:2px}
+@media(max-width:600px){.route-select-actions{padding:4px 8px 8px;gap:0}.route-select-action{padding:0 10px;font-size:12px}}
+
     </style>
 </head>
 <body>
@@ -332,7 +344,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
     </div>
     <div class="route-btn-wrapper">
         <button class="route-btn" id="openModalBtn">
-            <span id="selectedBusLabel">Выберите маршруты (макс. 6)</span>
+            <span id="selectedBusLabel">Выберите маршруты</span>
             <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
         </button>
     </div>
@@ -369,13 +381,17 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <div class="modal-head">
-            <h3>Выберите автобусы</h3>
+            <h3>Выбор маршрутов</h3>
             <button class="close-btn" id="closeModalBtn" aria-label="Закрыть выбор маршрутов">
                 <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
         </div>
+        <div class="route-select-actions" aria-label="Массовый выбор маршрутов">
+            <button type="button" id="selectAllRoutesBtn" class="route-select-action"><span class="material-icons" aria-hidden="true">done_all</span>Выбрать все</button>
+            <button type="button" id="clearRoutesBtn" class="route-select-action"><span class="material-icons" aria-hidden="true">clear_all</span>Снять выбор</button>
+        </div>
         <div class="modal-grid" id="modalGrid"></div>
-        <div class="modal-hint" id="modalHint">Выбрано 0 из 6</div>
+        <div class="modal-hint" id="modalHint" aria-live="polite">Выбрано 0 маршрутов</div>
     </div>
 </div>
 
@@ -397,7 +413,43 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         'https://proxy.cors.dev/'
     ];
 
-    const COLORS = ['#1976d2', '#f57c00', '#d32f2f', '#7b1fa2', '#c2185b', '#212121'];
+    // Оттенки классической палитры Material Design 1.0 (2015).
+    // Цвет зависит от позиции маршрута в каталоге, а не от порядка кликов.
+    // 60 заранее заданных цветов + автоматическая генерация для любого числа маршрутов.
+    const COLORS = [
+        '#1976d2','#e64a19','#7b1fa2','#388e3c','#d32f2f','#00796b','#c2185b','#455a64','#f57c00','#303f9f',
+        '#0097a7','#5d4037','#512da8','#689f38','#0288d1','#616161','#afb42b','#ffa000','#fbc02d','#009688',
+        '#0d47a1','#bf360c','#4a148c','#1b5e20','#b71c1c','#004d40','#880e4f','#263238','#e65100','#1a237e',
+        '#006064','#3e2723','#311b92','#33691e','#01579b','#424242','#827717','#ff6f00','#f57f17','#00695c',
+        '#2196f3','#ff5722','#9c27b0','#4caf50','#f44336','#26a69a','#e91e63','#607d8b','#ff9800','#3f51b5',
+        '#00acc1','#795548','#673ab7','#8bc34a','#03a9f4','#757575','#c0ca33','#ffb300','#fdd835','#00897b'
+    ];
+    function routeColor(index) {
+        if (index < COLORS.length) return COLORS[index];
+        const hue = (index * 137.508) % 360;
+        // Возвращаем HEX, чтобы один алгоритм контрастности работал и для новых цветов.
+        const sat = .65, light = .36;
+        const chroma = (1 - Math.abs(2 * light - 1)) * sat;
+        const x = chroma * (1 - Math.abs((hue / 60) % 2 - 1));
+        const m = light - chroma / 2;
+        const sextant = Math.floor(hue / 60);
+        const channels = [[chroma,x,0],[x,chroma,0],[0,chroma,x],[0,x,chroma],[x,0,chroma],[chroma,0,x]][sextant];
+        return '#' + channels.map(v => Math.round((v + m) * 255).toString(16).padStart(2,'0')).join('');
+    }
+    function routeForeground(color) {
+        // WCAG relative luminance, for legible route numbers on yellow/light-green chips.
+        let rgb;
+        if (color.startsWith('#')) {
+            rgb = [1,3,5].map(i => parseInt(color.slice(i,i+2),16) / 255);
+        } else {
+            // Generated HSL colors are dark enough for white text.
+            return '#fff';
+        }
+        const linear = rgb.map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4);
+        const luminance = linear[0]*.2126 + linear[1]*.7152 + linear[2]*.0722;
+        return luminance > .179 ? '#212121' : '#fff';
+    }
+
 
     const $ = id => document.getElementById(id);
     const openModalBtn = $('openModalBtn');
@@ -406,6 +458,8 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
     const closeModalBtn = $('closeModalBtn');
     const modalGrid = $('modalGrid');
     const modalHint = $('modalHint');
+    const selectAllRoutesBtn = $('selectAllRoutesBtn');
+    const clearRoutesBtn = $('clearRoutesBtn');
     const routeInfo = $('routeInfo');
     const routeNumEl = $('routeNumber');
     const routeDirEl = $('routeDirection');
@@ -535,6 +589,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
                 const btn = document.createElement('button');
                 btn.className = 'grid-btn';
                 btn.dataset.index = i;
+                btn.setAttribute('aria-pressed','false');
                 btn.textContent = cleanName(r.name);
                 btn.onclick = () => toggleRoute(i);
                 modalGrid.appendChild(btn);
@@ -558,10 +613,9 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
             updateModalUI();
             await redrawAllRoutes();
         } else {
-            if (selectedRoutes.length >= 6) return; 
-            
             const route = routes[index];
-            const color = COLORS.find(c => !selectedRoutes.some(r => r.color === c)) || COLORS[0];
+            if (!route) return;
+            const color = routeColor(index);
             
             selectedRoutes.push({
                 index: index,
@@ -574,6 +628,23 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         }
     }
 
+    // Один перерисовочный цикл вместо сотен запросов при выборе всех маршрутов.
+    selectAllRoutesBtn.addEventListener('click', () => {
+        if (!routes.length || selectedRoutes.length === routes.length) return;
+        const previous = new Map(selectedRoutes.map(item => [item.index, item]));
+        selectedRoutes = routes.map((route, index) => previous.get(index) || {
+            index, route, color:routeColor(index), directions:[]
+        });
+        updateModalUI();
+        redrawAllRoutes();
+    });
+    clearRoutesBtn.addEventListener('click', () => {
+        if (!selectedRoutes.length) return;
+        selectedRoutes = [];
+        updateModalUI();
+        redrawAllRoutes();
+    });
+
     // ─── Обновление UI модалки ───
     function updateModalUI() {
         document.querySelectorAll('.grid-btn').forEach(btn => {
@@ -584,17 +655,24 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
                 btn.classList.add('active');
                 btn.style.backgroundColor = match.color;
                 btn.style.borderColor = match.color;
+                btn.style.color = routeForeground(match.color);
+                btn.setAttribute('aria-pressed', 'true');
             } else {
                 btn.classList.remove('active');
                 btn.style.backgroundColor = '#f5f5f5';
                 btn.style.borderColor = '#e0e0e0';
+                btn.style.color = '#424242';
+                btn.setAttribute('aria-pressed', 'false');
             }
         });
-        
-        modalHint.textContent = `Выбрано ${selectedRoutes.length} из 6`;
-        selectedBusLabel.textContent = selectedRoutes.length === 0 
-            ? 'Выберите маршруты (макс. 6)' 
-            : `Выбрано: ${selectedRoutes.length}`;
+
+        const count = selectedRoutes.length;
+        modalHint.textContent = `Выбрано ${count} из ${routes.length} маршрутов`;
+        selectedBusLabel.textContent = count === 0
+            ? 'Выберите маршруты'
+            : count === routes.length ? `Все маршруты (${count})` : `Выбрано: ${count}`;
+        selectAllRoutesBtn.disabled = !routes.length || count === routes.length;
+        clearRoutesBtn.disabled = count === 0;
             
         if (selectedRoutes.length === 1) {
             routeInfo.classList.add('active');
@@ -620,6 +698,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         busPanel.classList.remove('active');
         stopPanel.classList.add('active');
         stopPanelHeader.style.backgroundColor = routeItem.color;
+        stopPanelHeader.style.color = routeForeground(routeItem.color);
         stopPanelTitle.textContent = zone.name || 'Остановка';
         if (activeStopElement) activeStopElement.classList.remove('stop-selected');
         activeStopElement = element || null;
@@ -629,7 +708,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         stopPanelBody.innerHTML = `
             <div class="stop-details">
                 <div class="stop-details-row"><span class="stop-details-label">Маршрут</span>
-                    <span class="stop-details-value"><span class="stop-route-chip" style="background:${routeItem.color}">${escapeHTML(cleanName(routeItem.route.name))}</span></span></div>
+                    <span class="stop-details-value"><span class="stop-route-chip" style="background:${routeItem.color};color:${routeForeground(routeItem.color)}">${escapeHTML(cleanName(routeItem.route.name))}</span></span></div>
                 <div class="stop-details-row"><span class="stop-details-label">Остановка</span>
                     <span class="stop-details-value">${escapeHTML(zone.name || '—')}</span></div>
                 <div class="stop-details-row"><span class="stop-details-label">Направление</span>
@@ -655,8 +734,14 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         clearLiveMarkers();
         if (selectedRoutes.length === 0) return;
 
+        // Автобусы появляются сразу, даже если остановки многих маршрутов ещё загружаются.
+        startLiveTracking();
         const bounds = L.latLngBounds();
         const activeRoutes = [...selectedRoutes];
+        const loadingState = document.createElement('li');
+        loadingState.className = 'route-load-state';
+        loadingState.textContent = `Загрузка остановок: 0 / ${activeRoutes.length}`;
+        stopListEl.appendChild(loadingState);
         // Дата именно Павлодара, а не часового пояса устройства пользователя.
         const dateParts = new Intl.DateTimeFormat('en-GB', {
             timeZone:'Asia/Almaty',year:'numeric',month:'2-digit',day:'2-digit'
@@ -665,7 +750,9 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         const dateStr = `${part('year')}-${part('month')}-${part('day')}`;
 
         // Повторное открытие выбранного маршрута не создаёт параллельные дубликаты запросов.
-        await Promise.all(activeRoutes.map(async item => {
+        let loadedDetails = 0;
+        let nextDetailIndex = 0;
+        const loadOneRoute = async item => {
             if (item.directions && item.directions.length) return;
             item.loadError = null;
             const baseParams = {route:item.route.name,vt:item.route.vt,srv:'pav',lang:'ru',timezone:'Asia/Almaty'};
@@ -685,8 +772,20 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
                 item.loadError = lastError ? 'Не удалось загрузить остановки' : 'Нет данных об остановках';
                 if (lastError) console.warn('[Route details]',item.route.name,lastError);
             }
-        }));
+        };
+        // Не создаём одновременно запросы ко всем маршрутам (важно для Vercel и мобильных).
+        const worker = async () => {
+            while (nextDetailIndex < activeRoutes.length && currentVersion === routeRenderVersion) {
+                const item = activeRoutes[nextDetailIndex++];
+                await loadOneRoute(item);
+                loadedDetails++;
+                if (currentVersion === routeRenderVersion)
+                    loadingState.textContent = `Загрузка остановок: ${loadedDetails} / ${activeRoutes.length}`;
+            }
+        };
+        await Promise.all(Array.from({length:Math.min(5,activeRoutes.length)}, worker));
         if (currentVersion !== routeRenderVersion) return;
+        loadingState.remove();
 
         activeRoutes.forEach(item => {
             const dir = item.directions[0];
@@ -697,6 +796,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
             const badge = document.createElement('span');
             badge.className = 'route-stop-badge';
             badge.style.backgroundColor = item.color;
+            badge.style.color = routeForeground(item.color);
             badge.textContent = cleanName(item.route.name);
             const direction = document.createElement('span');
             direction.className = 'route-stop-direction';
@@ -780,13 +880,12 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
                 }));
             }
         });
-        if (bounds.isValid()) {
+        if (bounds.isValid() && activeRoutes.length <= 12) {
             const padding = window.innerWidth <= 600
                 ? {paddingTopLeft:[20,20],paddingBottomRight:[20,80]}
                 : {paddingTopLeft:[380,40],paddingBottomRight:[40,40]};
             map.fitBounds(bounds, padding);
         }
-        startLiveTracking();
     }
 
     // Live: каждый кадр интерполируем от ТЕКУЩЕЙ позиции к новой координате.
@@ -885,8 +984,8 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         const rotation = course ? Math.round(course) : 0;
         
         const innerContent = isSingle
-            ? `<svg class="bus-svg-icon" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`
-            : `<span>${routeName}</span>`;
+            ? `<svg class="bus-svg-icon" viewBox="0 0 24 24" style="fill:${routeForeground(color)}"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`
+            : `<span style="color:${routeForeground(color)}">${escapeHTML(routeName)}</span>`;
 
         return L.divIcon({
             className: 'custom-icon-transport',
@@ -896,7 +995,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
                         <path d="M12 5L2 22H22Z" />
                     </svg>
                 </div>
-                <div class="obj-icon-circle" style="background-color: ${color};">
+                <div class="obj-icon-circle" style="background-color: ${color};color:${routeForeground(color)};">
                     ${innerContent}
                 </div>
             `,
@@ -911,6 +1010,7 @@ button:focus-visible,.stops-list li:focus-visible{outline:2px solid var(--md-acc
         const color = match ? match.color : '#1976d2';
         
         busPanelHeader.style.backgroundColor = color; // Динамический акцент
+        busPanelHeader.style.color = routeForeground(color);
         stopPanel.classList.remove('active');
         busPanel.classList.add('active');
         
